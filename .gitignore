@@ -19,6 +19,7 @@ dist/
 build/
 coverage/
 .cache/
+.next/
 
 # Python artifacts
 __pycache__/
