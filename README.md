@@ -35,3 +35,9 @@ A future backend, likely Django, should later provide:
 - `frontend/components/`: shared UI
 - `frontend/lib/api/`: backend-ready API contracts
 - `frontend/lib/mock-data.ts`: temporary frontend data source
+
+## API host convention
+
+The frontend is designed to call a dedicated API origin such as `https://api.crush.lu`
+through `NEXT_PUBLIC_API_BASE_URL`. Backend routes should therefore be exposed as
+`/hub/*` on that host rather than under an extra `/api/*` prefix.

@@ -36,11 +36,11 @@ The repository is configured for this with:
 
 Set these in the frontend deployment:
 
-- `NEXT_PUBLIC_API_BASE_URL=https://api-or-app-host/api`
+- `NEXT_PUBLIC_API_BASE_URL=https://api-or-app-host`
 
 For production, prefer:
 
-- `NEXT_PUBLIC_API_BASE_URL=https://api.crush.lu/api`
+- `NEXT_PUBLIC_API_BASE_URL=https://api.crush.lu`
 
 ## Backend environment variables
 

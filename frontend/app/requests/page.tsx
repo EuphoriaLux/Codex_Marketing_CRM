@@ -57,7 +57,7 @@ export default function RequestsPage() {
             </button>
             {draftSaved ? (
               <p className="form-note">
-                Draft captured locally. Replace this with a `POST /api/hub/requests`
+                Draft captured locally. Replace this with a `POST /hub/requests`
                 call when the backend is ready.
               </p>
             ) : null}

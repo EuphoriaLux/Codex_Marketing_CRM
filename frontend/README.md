@@ -12,11 +12,11 @@ This app is meant to move the portal UX forward before the Django backend is con
 
 ## Planned backend contract
 
-- `GET /api/hub/me`
-- `PATCH /api/hub/me`
-- `GET /api/hub/requests`
-- `POST /api/hub/requests`
-- `GET /api/hub/resources`
+- `GET /hub/me`
+- `PATCH /hub/me`
+- `GET /hub/requests`
+- `POST /hub/requests`
+- `GET /hub/resources`
 
 ## Local start
 

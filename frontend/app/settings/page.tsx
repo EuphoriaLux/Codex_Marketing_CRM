@@ -44,11 +44,11 @@ export default function SettingsPage() {
 
         <Panel title="Integration readiness" description="These are the frontend contracts to preserve when Django is added.">
           <ul className="stack-list">
-            <li>GET `/api/hub/me` for account context</li>
-            <li>GET `/api/hub/requests` for request listing</li>
-            <li>POST `/api/hub/requests` for new submissions</li>
-            <li>GET `/api/hub/resources` for shared documents</li>
-            <li>PATCH `/api/hub/me` for settings updates</li>
+            <li>GET `/hub/me` for account context</li>
+            <li>GET `/hub/requests` for request listing</li>
+            <li>POST `/hub/requests` for new submissions</li>
+            <li>GET `/hub/resources` for shared documents</li>
+            <li>PATCH `/hub/me` for settings updates</li>
           </ul>
         </Panel>
       </div>

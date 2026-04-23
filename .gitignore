@@ -12,6 +12,8 @@ logs/
 # Environment files
 .env
 .env.*
+!.env.local.example
+!frontend/.env.local.example
 
 # Dependencies and build output
 node_modules/
@@ -20,6 +22,7 @@ build/
 coverage/
 .cache/
 .next/
+frontend/out/
 
 # Python artifacts
 __pycache__/

@@ -17,7 +17,7 @@ export function StatusBanner() {
     return (
       <div className="status-banner">
         Running in SPA fallback mode. Connect Django later by implementing the
-        `/api/hub/*` endpoints.
+        `/hub/*` endpoints on your API host.
       </div>
     );
   }

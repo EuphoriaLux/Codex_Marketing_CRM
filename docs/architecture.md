@@ -30,7 +30,7 @@ This avoids building a second server-rendered website while still keeping the ba
 Use the same backend instance where possible.
 
 - Keep one backend for data and business rules.
-- Expose hub APIs such as `/api/hub/me`, `/api/hub/requests`, and `/api/hub/resources`.
+- Expose hub APIs such as `/hub/me`, `/hub/requests`, and `/hub/resources` on the dedicated API host.
 - Let Next.js own the customer UI and routing.
 - Reuse the existing auth and admin layer instead of duplicating them in a second web stack.
 

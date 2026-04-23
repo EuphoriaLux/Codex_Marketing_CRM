@@ -1,4 +1,4 @@
-import { apiGet } from "@/lib/api/client";
+import { apiGet, getAccessToken } from "@/lib/api/client";
 import {
   MeResponse,
   RequestsResponse,
@@ -29,6 +29,16 @@ export type HubPayload = {
 };
 
 export async function fetchHubData(): Promise<HubPayload> {
+  if (!getAccessToken()) {
+    return {
+      customer: customerSnapshot,
+      requests,
+      resources,
+      timeline,
+      source: "mock",
+    };
+  }
+
   try {
     const [meResponse, requestsResponse, resourcesResponse, timelineResponse] =
       await Promise.all([
