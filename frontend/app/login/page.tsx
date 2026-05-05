@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/api/client";
+import { buildSsoUrl, login } from "@/lib/api/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,6 +23,11 @@ export default function LoginPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleSso() {
+    const url = buildSsoUrl();
+    if (url) window.location.href = url;
   }
 
   return (
@@ -71,6 +76,27 @@ export default function LoginPage() {
           </button>
           {error ? <p className="form-note">{error}</p> : null}
         </form>
+
+        <div
+          style={{
+            marginTop: "1.5rem",
+            paddingTop: "1.5rem",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ margin: "0 0 0.75rem", opacity: 0.6, fontSize: "0.85rem" }}>
+            Already signed in to Crush.lu?
+          </p>
+          <button
+            type="button"
+            onClick={handleSso}
+            className="button"
+            style={{ width: "100%" }}
+          >
+            Continue with Crush.lu
+          </button>
+        </div>
       </div>
     </main>
   );

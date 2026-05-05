@@ -71,6 +71,41 @@ export async function login(username: string, password: string): Promise<void> {
   setTokens(data.access, data.refresh);
 }
 
+// SSO bounce flow: the user is sent to the Django backend's
+// /api/auth/spa-callback/ which (after a Crush.lu allauth login if needed)
+// 302s back here to /auth/callback?code=ABC. We POST that code to
+// /api/token/exchange-code/ to receive a JWT pair.
+export async function exchangeCode(code: string): Promise<void> {
+  if (!API_BASE_URL) {
+    throw new Error("NEXT_PUBLIC_API_BASE_URL is not configured.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/token/exchange-code/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Code exchange failed");
+  }
+
+  const data = (await response.json()) as { access: string; refresh: string };
+  setTokens(data.access, data.refresh);
+}
+
+// Build the URL the SSO button sends the user to. The return URL must be
+// listed in Django's SPA_CALLBACK_ALLOWED_RETURN_URLS exactly, so we use
+// `${window.location.origin}/auth/callback` — for production that resolves
+// to https://hub.crush.lu/auth/callback (whitelisted), for local dev to
+// http://localhost:3000/auth/callback (also whitelisted under DEBUG).
+export function buildSsoUrl(): string | null {
+  if (!API_BASE_URL || typeof window === "undefined") return null;
+  const callback = `${window.location.origin}/auth/callback`;
+  return `${API_BASE_URL}/api/auth/spa-callback/?return=${encodeURIComponent(callback)}`;
+}
+
 export async function logout(): Promise<void> {
   const refresh = getRefreshToken();
   clearTokens();
