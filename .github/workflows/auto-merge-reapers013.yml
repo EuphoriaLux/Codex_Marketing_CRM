@@ -1,5 +1,11 @@
 name: Auto-merge PRs from REAPERS013
 
+# pull_request_target also fires for syncs of any open PR whose head includes
+# the just-pushed commit — including PRs in REAPERS013's downstream fork that
+# track upstream main. With the previous job-level `if:`, those non-REAPERS013
+# PRs filtered out the only job, and GitHub reported the workflow as
+# **failure** (not skipped) leaving red Xs on every push to main. Moving the
+# guard to step level keeps the job itself always succeeding.
 on:
   pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review]
@@ -10,16 +16,30 @@ permissions:
 
 jobs:
   auto-merge:
-    if: github.event.pull_request.user.login == 'REAPERS013' && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
+      - name: Decide whether to auto-merge
+        id: gate
+        run: |
+          author="${{ github.event.pull_request.user.login }}"
+          draft="${{ github.event.pull_request.draft }}"
+          if [ "$author" = "REAPERS013" ] && [ "$draft" != "true" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "Auto-merging PR from $author"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: author='$author' draft='$draft' (only auto-merging REAPERS013, non-draft)"
+          fi
+
       - name: Approve PR
+        if: steps.gate.outputs.should_run == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr review "$PR_URL" --approve --body "Auto-approved: trusted author REAPERS013."
 
       - name: Squash and merge
+        if: steps.gate.outputs.should_run == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
