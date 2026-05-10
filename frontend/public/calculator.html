@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simulateur Revenus Événements — Crush.lu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0b0e;
+    --surface: #16131a;
+    --surface-2: #1f1a25;
+    --border: #2a2330;
+    --text: #f5ede4;
+    --text-dim: #a8998d;
+    --text-muted: #6b5f55;
+    --accent: #e85a4f;
+    --accent-soft: #f5a195;
+    --accent-glow: rgba(232, 90, 79, 0.18);
+    --gold: #d4a574;
+    --teal: #6b9c91;
+    --plum: #8b6b8b;
+    --positive: #7fb069;
+    --negative: #c45a5a;
+    --grain-opacity: 0.04;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+    background-size: 4px 4px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ─────────────────────────────────────── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 36px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 14px;
+    color: var(--accent);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+  .brand-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(34px, 5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-top: 8px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-top: 8px;
+    max-width: 520px;
+  }
+
+  /* ── PERIOD TOGGLE ─────────────────────────────── */
+  .period-toggle {
+    display: inline-flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 2px;
+  }
+  .period-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 999px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .period-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 16px var(--accent-glow);
+  }
+  .period-btn:not(.active):hover { color: var(--text); }
+
+  /* ── KPI CARDS ──────────────────────────────────── */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s ease;
+  }
+  .kpi:hover { border-color: var(--text-muted); }
+  .kpi-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .kpi-value {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .kpi-suffix { color: var(--text-dim); font-size: 18px; font-weight: 300; margin-left: 2px; }
+  .kpi-meta {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .kpi.featured {
+    background: linear-gradient(135deg, rgba(232,90,79,0.08) 0%, var(--surface) 100%);
+    border-color: var(--accent);
+  }
+  .kpi.featured .kpi-value { color: var(--accent-soft); }
+  .kpi.net.positive .kpi-value { color: var(--positive); }
+  .kpi.net.negative .kpi-value { color: var(--negative); }
+
+  /* ── FORMULA STRIP ──────────────────────────────── */
+  .formula-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 24px;
+    margin-bottom: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .formula-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .f-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .f-value {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--text);
+    font-weight: 400;
+  }
+  .f-pos { color: var(--accent-soft); }
+  .formula-op {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    color: var(--text-muted);
+    font-weight: 300;
+    padding: 0 4px;
+  }
+  .formula-total .f-label { color: var(--accent); }
+  .formula-total .f-value { color: var(--accent-soft); font-weight: 500; }
+
+  /* ── PARTICIPANTS STRIP ─────────────────────────── */
+  .participants-strip {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 12px 0;
+    margin-bottom: 36px;
+    font-style: italic;
+  }
+  .participants-strip .ps-num {
+    font-family: 'Fraunces', serif;
+    font-style: normal;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .participants-strip .sep {
+    color: var(--text-muted);
+    margin: 0 12px;
+    font-style: normal;
+  }
+
+  /* ── SECTION ────────────────────────────────────── */
+  section { margin-bottom: 56px; }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .section-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--accent);
+    margin-right: 10px;
+    font-weight: 300;
+  }
+  .section-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* ── EVENT TABLE ────────────────────────────────── */
+  .event-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .event-row, .event-header {
+    display: grid;
+    grid-template-columns: 56px minmax(160px, 1.4fr) repeat(5, 1fr) 1.3fr;
+    gap: 0;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .event-row:last-child { border-bottom: none; }
+  .event-header {
+    background: var(--surface-2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 12px 0;
+  }
+  .event-header > div { padding: 0 12px; }
+  .event-row { padding: 14px 0; transition: background 0.15s ease; }
+  .event-row:hover { background: var(--surface-2); }
+  .event-row > div { padding: 0 12px; }
+
+  .color-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    margin: 0 auto;
+  }
+
+  .event-name { font-weight: 500; font-size: 14px; }
+  .event-name small {
+    display: block;
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    text-align: right;
+    transition: all 0.15s ease;
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface-2);
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { opacity: 0.4; }
+
+  .event-result {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .res-line {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .res-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .res-val {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 400;
+  }
+  .res-cost { color: var(--text-dim); }
+  .res-net { color: var(--accent-soft); }
+
+  /* ── CHART GRID ─────────────────────────────────── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .chart-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .chart-card .chart-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .chart-wrapper { position: relative; height: 280px; }
+
+  /* ── BREAKDOWN LEGEND ───────────────────────────── */
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .legend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .legend-left { display: flex; align-items: center; gap: 10px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-value {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--accent-soft);
+  }
+  .legend-pct { color: var(--text-muted); font-size: 11px; margin-left: 8px; }
+
+  /* ── COSTS PANEL ────────────────────────────────── */
+  .cost-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .cost-block label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .cost-block .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .cost-block .input-row span { font-size: 13px; flex: 1; color: var(--text-dim); }
+  .cost-block .input-row input {
+    width: 110px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    text-align: right;
+  }
+
+  /* ── ASSUMPTIONS NOTE ───────────────────────────── */
+  .assumptions {
+    background: linear-gradient(135deg, rgba(212,165,116,0.06), transparent);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--gold);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin-top: 32px;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+  .assumptions strong { color: var(--gold); font-weight: 500; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  @media (max-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .event-row, .event-header {
+      grid-template-columns: 40px 1.2fr repeat(2, 1fr);
+      grid-template-areas: none;
+      font-size: 12px;
+    }
+    .event-header > div:nth-child(n+5) { display: none; }
+    .event-row > div:nth-child(n+5) { display: none; }
+    .event-row > .event-revenue { display: block; grid-column: 1 / -1; text-align: right; padding-top: 8px; }
+    .cost-panel { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div>
+      <div class="brand">
+        <span class="brand-dot"></span>
+        Crush.lu — outil interne
+      </div>
+      <h1>Simulateur de revenus<br/><em>événements</em></h1>
+      <p class="subtitle">Modélise les revenus de la billetterie événementielle. Ajuste les paramètres ci-dessous — tout se recalcule en temps réel.</p>
+    </div>
+    <div class="period-toggle" role="tablist" aria-label="Période">
+      <button class="period-btn active" data-period="annual">Annuel</button>
+      <button class="period-btn" data-period="monthly">Mensuel</button>
+      <button class="period-btn" data-period="weekly">Hebdomadaire</button>
+    </div>
+  </header>
+
+  <!-- KPI CARDS -->
+  <div class="kpis">
+    <div class="kpi featured">
+      <div class="kpi-label">Revenu brut</div>
+      <div class="kpi-value" id="kpi-revenue">0<span class="kpi-suffix"> €</span></div>
+      <div class="kpi-meta" id="kpi-revenue-meta">— par période</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Coûts événements</div>
+      <div class="kpi-value" id="kpi-event-costs">0<span class="kpi-suffix"> €</span></div>
+      <div class="kpi-meta" id="kpi-event-costs-meta">Σ (nb × coût/évén.)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Charges fixes &amp; frais</div>
+      <div class="kpi-value" id="kpi-fixed-costs">0<span class="kpi-suffix"> €</span></div>
+      <div class="kpi-meta" id="kpi-fixed-costs-meta">Fixes + Stripe</div>
+    </div>
+    <div class="kpi net positive" id="kpi-net-card">
+      <div class="kpi-label">Marge nette</div>
+      <div class="kpi-value" id="kpi-net">0<span class="kpi-suffix"> €</span></div>
+      <div class="kpi-meta" id="kpi-net-meta">Marge: 0%</div>
+    </div>
+  </div>
+
+  <!-- DETAILED FORMULA STRIP -->
+  <div class="formula-strip">
+    <div class="formula-item">
+      <span class="f-label">Revenu billetterie</span>
+      <span class="f-value f-pos" id="f-revenue">0 €</span>
+    </div>
+    <div class="formula-op">−</div>
+    <div class="formula-item">
+      <span class="f-label">Coûts événements</span>
+      <span class="f-value" id="f-event">0 €</span>
+    </div>
+    <div class="formula-op">−</div>
+    <div class="formula-item">
+      <span class="f-label">Frais Stripe</span>
+      <span class="f-value" id="f-stripe">0 €</span>
+    </div>
+    <div class="formula-op">−</div>
+    <div class="formula-item">
+      <span class="f-label">Charges fixes</span>
+      <span class="f-value" id="f-fixed">0 €</span>
+    </div>
+    <div class="formula-op">=</div>
+    <div class="formula-item formula-total">
+      <span class="f-label">Marge nette</span>
+      <span class="f-value" id="f-net">0 €</span>
+    </div>
+  </div>
+
+  <!-- PARTICIPANTS STAT -->
+  <div class="participants-strip">
+    <span class="ps-num" id="kpi-participants">0</span> participants par <span id="kpi-period-label">an</span>
+    <span class="sep">·</span>
+    <span class="ps-num" id="kpi-events">0</span> événements
+    <span class="sep">·</span>
+    Ticket moyen <span class="ps-num" id="kpi-avg-ticket">0 €</span>
+  </div>
+
+  <!-- EVENT CONFIG TABLE -->
+  <section>
+    <div class="section-header">
+      <div class="section-title"><span class="section-num">01.</span>Configuration des événements</div>
+      <div class="section-hint">Valeurs par défaut calibrées sur les données 2025</div>
+    </div>
+    <div class="event-table">
+      <div class="event-header">
+        <div></div>
+        <div>Type</div>
+        <div style="text-align:right">Évén. / an</div>
+        <div style="text-align:right">Capacité</div>
+        <div style="text-align:right">Remplissage %</div>
+        <div style="text-align:right">Prix billet €</div>
+        <div style="text-align:right">Coût / évén. €</div>
+        <div style="text-align:right">Coût &amp; Net /période</div>
+      </div>
+      <div id="event-rows"></div>
+    </div>
+
+    <div class="assumptions">
+      <strong>Hypothèses par défaut.</strong> Speed Dating et Mixers : ~24 événements/an (2x/mois). Activités à thème : 12/an (1x/mois). Soirées Spéciales : 5/an (Saint-Valentin, été, Halloween, Nouvel An, anniversaire). Taux de remplissage moyen 65-75% (vs. 43% actuel sur événements gratuits — la billetterie payante réduit le no-show de 21,8% observé).
+    </div>
+  </section>
+
+  <!-- COSTS PANEL -->
+  <section>
+    <div class="section-header">
+      <div class="section-title"><span class="section-num">02.</span>Charges fixes</div>
+      <div class="section-hint">Réparties au prorata sur la période affichée</div>
+    </div>
+    <div class="cost-panel">
+      <div class="cost-block">
+        <label>Frais opérationnels annuels</label>
+        <div class="input-row">
+          <span>Coordination &amp; logistique (Coach event)</span>
+          <input type="number" id="cost-coord" value="6000" step="500" min="0" />
+        </div>
+        <div class="input-row">
+          <span>Marketing événementiel ciblé</span>
+          <input type="number" id="cost-mktg" value="3000" step="500" min="0" />
+        </div>
+        <div class="input-row">
+          <span>Assurance &amp; divers</span>
+          <input type="number" id="cost-misc" value="1500" step="100" min="0" />
+        </div>
+      </div>
+      <div class="cost-block">
+        <label>Paramètres de transaction</label>
+        <div class="input-row">
+          <span>Frais Stripe (% sur billetterie)</span>
+          <input type="number" id="cost-stripe" value="2.9" step="0.1" min="0" max="10" />
+        </div>
+        <div class="input-row">
+          <span>Frais fixes Stripe / billet (€)</span>
+          <input type="number" id="cost-stripe-fixed" value="0.30" step="0.05" min="0" />
+        </div>
+        <div class="input-row">
+          <span>Taux no-show (%)</span>
+          <input type="number" id="noshow-rate" value="10" step="1" min="0" max="50" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHARTS -->
+  <section>
+    <div class="section-header">
+      <div class="section-title"><span class="section-num">03.</span>Visualisations</div>
+      <div class="section-hint">Distribution et répartition des revenus</div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Distribution sur la période</h3>
+        <div class="chart-sub" id="distribution-sub">12 mois — revenu brut par mois</div>
+        <div class="chart-wrapper"><canvas id="distribution-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Répartition par type</h3>
+        <div class="chart-sub">Contribution au revenu total</div>
+        <div class="chart-wrapper"><canvas id="breakdown-chart"></canvas></div>
+        <div class="legend" id="breakdown-legend"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    « Des vraies rencontres, pas des matchs qui n'aboutissent jamais. »
+  </footer>
+
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────
+const eventTypes = [
+  { id: 'speed',    name: 'Speed Dating',    desc: '2x / mois — sessions de 5-7 min',     color: '#e85a4f', count: 24, capacity: 20, fill: 75, price: 32, cost: 350 },
+  { id: 'mixer',    name: 'Mixer Social',    desc: '2x / mois — bar / restaurant',         color: '#d4a574', count: 24, capacity: 30, fill: 65, price: 20, cost: 200 },
+  { id: 'theme',    name: 'Activité à thème',desc: '1x / mois — cuisine, randonnée, vin',  color: '#6b9c91', count: 12, capacity: 16, fill: 70, price: 45, cost: 450 },
+  { id: 'special',  name: 'Soirée Spéciale', desc: '5x / an — Saint-Valentin, Halloween…', color: '#8b6b8b', count: 5,  capacity: 40, fill: 80, price: 60, cost: 1200 },
+];
+
+const PERIODS = {
+  annual:  { label: 'an',     divisor: 1,  bins: 12, binLabel: 'mois', binNames: ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'] },
+  monthly: { label: 'mois',   divisor: 12, bins: 12, binLabel: 'mois', binNames: ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'] },
+  weekly:  { label: 'sem.',   divisor: 52, bins: 52, binLabel: 'sem.', binNames: Array.from({length: 52}, (_, i) => 'S' + (i+1)) },
+};
+
+let currentPeriod = 'annual';
+let distributionChart, breakdownChart;
+
+// ─── FORMATTING ─────────────────────────────────────
+const fmtEur = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n));
+const fmtNum = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n));
+const fmtPct = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(n) + '%';
+
+// ─── RENDER EVENT ROWS ──────────────────────────────
+function renderEventRows() {
+  const container = document.getElementById('event-rows');
+  container.innerHTML = eventTypes.map(t => `
+    <div class="event-row">
+      <div style="text-align:center"><span class="color-dot" style="background:${t.color}"></span></div>
+      <div class="event-name">${t.name}<small>${t.desc}</small></div>
+      <div><input type="number" id="cnt-${t.id}" value="${t.count}" min="0" step="1" /></div>
+      <div><input type="number" id="cap-${t.id}" value="${t.capacity}" min="0" step="1" /></div>
+      <div><input type="number" id="fil-${t.id}" value="${t.fill}" min="0" max="100" step="1" /></div>
+      <div><input type="number" id="prc-${t.id}" value="${t.price}" min="0" step="1" /></div>
+      <div><input type="number" id="cst-${t.id}" value="${t.cost}" min="0" step="50" /></div>
+      <div class="event-result" id="res-${t.id}">
+        <div class="res-line"><span class="res-tag">Coût</span><span class="res-val res-cost" id="cost-${t.id}">— €</span></div>
+        <div class="res-line"><span class="res-tag">Net</span><span class="res-val res-net" id="rev-${t.id}">— €</span></div>
+      </div>
+    </div>
+  `).join('');
+
+  eventTypes.forEach(t => {
+    ['cnt','cap','fil','prc','cst'].forEach(prefix => {
+      document.getElementById(`${prefix}-${t.id}`).addEventListener('input', recalc);
+    });
+  });
+}
+
+// ─── CALCULATIONS ───────────────────────────────────
+function getInputs() {
+  const types = eventTypes.map(t => ({
+    ...t,
+    count: +document.getElementById(`cnt-${t.id}`).value || 0,
+    capacity: +document.getElementById(`cap-${t.id}`).value || 0,
+    fill: +document.getElementById(`fil-${t.id}`).value || 0,
+    price: +document.getElementById(`prc-${t.id}`).value || 0,
+    cost: +document.getElementById(`cst-${t.id}`).value || 0,
+  }));
+  return {
+    types,
+    coordCost: +document.getElementById('cost-coord').value || 0,
+    mktgCost:  +document.getElementById('cost-mktg').value  || 0,
+    miscCost:  +document.getElementById('cost-misc').value  || 0,
+    stripePct: (+document.getElementById('cost-stripe').value || 0) / 100,
+    stripeFix: +document.getElementById('cost-stripe-fixed').value || 0,
+    noShow:    (+document.getElementById('noshow-rate').value || 0) / 100,
+  };
+}
+
+function compute() {
+  const inp = getInputs();
+  const period = PERIODS[currentPeriod];
+  const div = period.divisor;
+
+  let totalRevenue = 0, totalEventCost = 0, totalParticipants = 0, totalEvents = 0, totalStripe = 0, totalTickets = 0;
+
+  const perType = inp.types.map(t => {
+    const annualEvents = t.count;
+    const ticketsSold = annualEvents * t.capacity * (t.fill / 100);
+    const showUpRate = 1 - inp.noShow;
+    const annualParticipants = ticketsSold * showUpRate;
+    const annualRevenue = ticketsSold * t.price;
+    const annualEventCost = annualEvents * t.cost;
+    const annualStripe = ticketsSold * (t.price * inp.stripePct + inp.stripeFix);
+    const annualNet = annualRevenue - annualEventCost - annualStripe;
+
+    totalRevenue += annualRevenue;
+    totalEventCost += annualEventCost;
+    totalParticipants += annualParticipants;
+    totalEvents += annualEvents;
+    totalStripe += annualStripe;
+    totalTickets += ticketsSold;
+
+    return { ...t, annualEvents, annualRevenue, annualEventCost, annualStripe, annualNet, annualParticipants };
+  });
+
+  const annualFixed = inp.coordCost + inp.mktgCost + inp.miscCost;
+  const annualTotalCost = totalEventCost + totalStripe + annualFixed;
+  const annualNet = totalRevenue - annualTotalCost;
+  const margin = totalRevenue > 0 ? (annualNet / totalRevenue) * 100 : 0;
+
+  // Period-adjusted values
+  const periodRevenue = totalRevenue / div;
+  const periodCost = annualTotalCost / div;
+  const periodNet = annualNet / div;
+  const periodParticipants = totalParticipants / div;
+  const periodEvents = totalEvents / div;
+
+  return {
+    perType,
+    totalRevenue, annualTotalCost, annualNet, margin,
+    totalEvents, totalParticipants, totalTickets,
+    periodRevenue, periodCost, periodNet, periodParticipants, periodEvents,
+    annualFixed, totalEventCost, totalStripe,
+  };
+}
+
+// ─── DISTRIBUTION (seasonality-aware) ───────────────
+// Monthly weights — slight boost in Feb (Saint-Valentin), Sep-Oct (rentrée), Dec
+const monthWeights = [0.85, 1.30, 1.00, 0.95, 1.05, 0.95, 0.75, 0.70, 1.10, 1.15, 1.00, 1.20];
+// Normalize so they sum to 12
+const sumW = monthWeights.reduce((a,b)=>a+b, 0);
+const monthWeightsN = monthWeights.map(w => w * 12 / sumW);
+
+function distributionData(annualValue, period) {
+  if (period === 'weekly') {
+    // Spread monthly weights across ~4.33 weeks
+    const arr = [];
+    for (let w = 0; w < 52; w++) {
+      const monthIdx = Math.min(11, Math.floor(w / (52/12)));
+      arr.push(annualValue * monthWeightsN[monthIdx] / 52);
+    }
+    return arr;
+  }
+  // monthly or annual → 12 months
+  return monthWeightsN.map(w => annualValue * w / 12);
+}
+
+// ─── RENDER ─────────────────────────────────────────
+function recalc() {
+  const r = compute();
+  const period = PERIODS[currentPeriod];
+  const div = period.divisor;
+
+  // Period-adjusted cost components
+  const periodEventCost = r.totalEventCost / div;
+  const periodStripe = r.totalStripe / div;
+  const periodFixed = r.annualFixed / div;
+  const periodFixedAndStripe = periodStripe + periodFixed;
+
+  // ── Main KPIs ──
+  document.getElementById('kpi-revenue').innerHTML = fmtEur(r.periodRevenue) + '<span class="kpi-suffix"> €</span>';
+  document.getElementById('kpi-revenue-meta').textContent = `par ${period.label} · ${fmtEur(r.totalRevenue)} € / an`;
+
+  document.getElementById('kpi-event-costs').innerHTML = fmtEur(periodEventCost) + '<span class="kpi-suffix"> €</span>';
+  document.getElementById('kpi-event-costs-meta').textContent = `${fmtEur(r.totalEventCost)} € / an · ${fmtNum(r.totalEvents)} évén.`;
+
+  document.getElementById('kpi-fixed-costs').innerHTML = fmtEur(periodFixedAndStripe) + '<span class="kpi-suffix"> €</span>';
+  document.getElementById('kpi-fixed-costs-meta').textContent = `Fixes ${fmtEur(r.annualFixed)} € + Stripe ${fmtEur(r.totalStripe)} € / an`;
+
+  const netCard = document.getElementById('kpi-net-card');
+  netCard.classList.toggle('positive', r.annualNet >= 0);
+  netCard.classList.toggle('negative', r.annualNet < 0);
+  document.getElementById('kpi-net').innerHTML = (r.periodNet < 0 ? '−' : '') + fmtEur(Math.abs(r.periodNet)) + '<span class="kpi-suffix"> €</span>';
+  document.getElementById('kpi-net-meta').textContent = `Marge: ${fmtPct(r.margin)} · ${fmtEur(r.annualNet)} € / an`;
+
+  // ── Formula strip (period-adjusted) ──
+  document.getElementById('f-revenue').textContent = fmtEur(r.periodRevenue) + ' €';
+  document.getElementById('f-event').textContent = fmtEur(periodEventCost) + ' €';
+  document.getElementById('f-stripe').textContent = fmtEur(periodStripe) + ' €';
+  document.getElementById('f-fixed').textContent = fmtEur(periodFixed) + ' €';
+  document.getElementById('f-net').textContent = (r.periodNet < 0 ? '−' : '') + fmtEur(Math.abs(r.periodNet)) + ' €';
+
+  // ── Participants strip ──
+  document.getElementById('kpi-participants').textContent = fmtNum(r.periodParticipants);
+  document.getElementById('kpi-events').textContent = fmtNum(r.periodEvents);
+  document.getElementById('kpi-period-label').textContent = period.label;
+  const avgTicket = r.totalTickets > 0 ? r.totalRevenue / r.totalTickets : 0;
+  document.getElementById('kpi-avg-ticket').textContent = fmtEur(avgTicket) + ' €';
+
+  // Per-type rows: show both cost contribution and net
+  r.perType.forEach(t => {
+    const periodCost = t.annualEventCost / div;
+    const periodNet = t.annualNet / div;
+    document.getElementById(`cost-${t.id}`).textContent = fmtEur(periodCost) + ' €';
+    document.getElementById(`rev-${t.id}`).textContent = (periodNet < 0 ? '−' : '') + fmtEur(Math.abs(periodNet)) + ' €';
+  });
+
+  // Distribution chart
+  const distLabel = period.binNames;
+  const distData = distributionData(r.totalRevenue, currentPeriod);
+  document.getElementById('distribution-sub').textContent = `${distLabel.length} ${period.binLabel} — revenu brut`;
+  if (distributionChart) {
+    distributionChart.data.labels = distLabel;
+    distributionChart.data.datasets[0].data = distData;
+    distributionChart.update();
+  }
+
+  // Breakdown chart
+  const labels = r.perType.map(t => t.name);
+  const data = r.perType.map(t => t.annualRevenue);
+  const colors = r.perType.map(t => t.color);
+  if (breakdownChart) {
+    breakdownChart.data.labels = labels;
+    breakdownChart.data.datasets[0].data = data;
+    breakdownChart.data.datasets[0].backgroundColor = colors;
+    breakdownChart.update();
+  }
+
+  // Legend
+  const legend = document.getElementById('breakdown-legend');
+  legend.innerHTML = r.perType.map(t => {
+    const pct = r.totalRevenue ? (t.annualRevenue / r.totalRevenue * 100) : 0;
+    const periodVal = t.annualRevenue / period.divisor;
+    return `
+      <div class="legend-item">
+        <div class="legend-left">
+          <span class="legend-dot" style="background:${t.color}"></span>
+          <span>${t.name}</span>
+        </div>
+        <div>
+          <span class="legend-value">${fmtEur(periodVal)} €</span>
+          <span class="legend-pct">${fmtPct(pct)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── INIT CHARTS ────────────────────────────────────
+function initCharts() {
+  const ctxBar = document.getElementById('distribution-chart').getContext('2d');
+  distributionChart = new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+      labels: PERIODS.annual.binNames,
+      datasets: [{
+        label: 'Revenu',
+        data: [],
+        backgroundColor: 'rgba(232, 90, 79, 0.55)',
+        borderColor: 'rgba(232, 90, 79, 1)',
+        borderWidth: 0,
+        borderRadius: 3,
+        hoverBackgroundColor: 'rgba(232, 90, 79, 0.85)',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1f1a25',
+          borderColor: '#2a2330',
+          borderWidth: 1,
+          titleColor: '#f5ede4',
+          bodyColor: '#f5a195',
+          titleFont: { family: 'Manrope', size: 12 },
+          bodyFont: { family: 'Fraunces', size: 14 },
+          padding: 12,
+          callbacks: { label: (ctx) => fmtEur(ctx.parsed.y) + ' €' }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#a8998d', font: { family: 'Manrope', size: 11 } }
+        },
+        y: {
+          grid: { color: 'rgba(168, 153, 141, 0.08)' },
+          ticks: {
+            color: '#a8998d',
+            font: { family: 'Manrope', size: 11 },
+            callback: (v) => fmtEur(v) + ' €'
+          }
+        }
+      }
+    }
+  });
+
+  const ctxDoughnut = document.getElementById('breakdown-chart').getContext('2d');
+  breakdownChart = new Chart(ctxDoughnut, {
+    type: 'doughnut',
+    data: {
+      labels: [],
+      datasets: [{
+        data: [],
+        backgroundColor: [],
+        borderColor: '#16131a',
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1f1a25',
+          borderColor: '#2a2330',
+          borderWidth: 1,
+          titleColor: '#f5ede4',
+          bodyColor: '#f5a195',
+          padding: 12,
+          callbacks: {
+            label: (ctx) => `${ctx.label}: ${fmtEur(ctx.parsed)} €`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ─── PERIOD TOGGLE ──────────────────────────────────
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPeriod = btn.dataset.period;
+    recalc();
+  });
+});
+
+// Cost listeners
+['cost-coord','cost-mktg','cost-misc','cost-stripe','cost-stripe-fixed','noshow-rate']
+  .forEach(id => document.getElementById(id).addEventListener('input', recalc));
+
+// ─── BOOT ───────────────────────────────────────────
+renderEventRows();
+initCharts();
+recalc();
+</script>
+</body>
+</html>
