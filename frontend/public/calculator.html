@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root {
     --bg: #0d0b0e;
@@ -102,6 +103,38 @@
     margin-top: 8px;
     max-width: 520px;
   }
+
+  /* ── HEADER ACTIONS ────────────────────────────── */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pdf-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent-soft);
+    box-shadow: 0 4px 16px var(--accent-glow);
+  }
+  .pdf-btn:disabled { opacity: 0.5; cursor: progress; }
+  .pdf-btn svg { width: 14px; height: 14px; }
 
   /* ── PERIOD TOGGLE ─────────────────────────────── */
   .period-toggle {
@@ -527,10 +560,20 @@
       <h1>Simulateur de revenus<br/><em>événements</em></h1>
       <p class="subtitle">Modélise les revenus de la billetterie événementielle. Ajuste les paramètres ci-dessous — tout se recalcule en temps réel.</p>
     </div>
-    <div class="period-toggle" role="tablist" aria-label="Période">
-      <button class="period-btn active" data-period="annual">Annuel</button>
-      <button class="period-btn" data-period="monthly">Mensuel</button>
-      <button class="period-btn" data-period="weekly">Hebdomadaire</button>
+    <div class="header-actions">
+      <button id="pdf-btn" type="button" class="pdf-btn" title="Télécharger un PDF de la simulation actuelle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Télécharger PDF
+      </button>
+      <div class="period-toggle" role="tablist" aria-label="Période">
+        <button class="period-btn active" data-period="annual">Annuel</button>
+        <button class="period-btn" data-period="monthly">Mensuel</button>
+        <button class="period-btn" data-period="weekly">Hebdomadaire</button>
+      </div>
     </div>
   </header>
 
@@ -616,7 +659,7 @@
     </div>
 
     <div class="assumptions">
-      <strong>Hypothèses par défaut.</strong> Speed Dating et Mixers : ~24 événements/an (2x/mois). Activités à thème : 12/an (1x/mois). Soirées Spéciales : 5/an (Saint-Valentin, été, Halloween, Nouvel An, anniversaire). Taux de remplissage moyen 65-75% (vs. 43% actuel sur événements gratuits — la billetterie payante réduit le no-show de 21,8% observé).
+      <strong>Tout démarre à 0 — saisis tes propres hypothèses.</strong> À titre indicatif : Speed Dating et Mixers ~24 évén./an (2x/mois), Activités à thème ~12/an (1x/mois), Soirées Spéciales ~5/an. Remplissage moyen observé en billetterie payante : 65-75 %. Frais Stripe standards : 2,9 % + 0,30 € par billet. Une fois tes valeurs entrées, tu peux télécharger un PDF de la simulation pour le partager.
     </div>
   </section>
 
@@ -631,30 +674,30 @@
         <label>Frais opérationnels annuels</label>
         <div class="input-row">
           <span>Coordination &amp; logistique (Coach event)</span>
-          <input type="number" id="cost-coord" value="6000" step="500" min="0" />
+          <input type="number" id="cost-coord" value="0" step="500" min="0" />
         </div>
         <div class="input-row">
           <span>Marketing événementiel ciblé</span>
-          <input type="number" id="cost-mktg" value="3000" step="500" min="0" />
+          <input type="number" id="cost-mktg" value="0" step="500" min="0" />
         </div>
         <div class="input-row">
           <span>Assurance &amp; divers</span>
-          <input type="number" id="cost-misc" value="1500" step="100" min="0" />
+          <input type="number" id="cost-misc" value="0" step="100" min="0" />
         </div>
       </div>
       <div class="cost-block">
         <label>Paramètres de transaction</label>
         <div class="input-row">
           <span>Frais Stripe (% sur billetterie)</span>
-          <input type="number" id="cost-stripe" value="2.9" step="0.1" min="0" max="10" />
+          <input type="number" id="cost-stripe" value="0" step="0.1" min="0" max="10" />
         </div>
         <div class="input-row">
           <span>Frais fixes Stripe / billet (€)</span>
-          <input type="number" id="cost-stripe-fixed" value="0.30" step="0.05" min="0" />
+          <input type="number" id="cost-stripe-fixed" value="0" step="0.05" min="0" />
         </div>
         <div class="input-row">
           <span>Taux no-show (%)</span>
-          <input type="number" id="noshow-rate" value="10" step="1" min="0" max="50" />
+          <input type="number" id="noshow-rate" value="0" step="1" min="0" max="50" />
         </div>
       </div>
     </div>
@@ -690,10 +733,10 @@
 <script>
 // ─── DATA ───────────────────────────────────────────
 const eventTypes = [
-  { id: 'speed',    name: 'Speed Dating',    desc: '2x / mois — sessions de 5-7 min',     color: '#e85a4f', count: 24, capacity: 20, fill: 75, price: 32, cost: 350 },
-  { id: 'mixer',    name: 'Mixer Social',    desc: '2x / mois — bar / restaurant',         color: '#d4a574', count: 24, capacity: 30, fill: 65, price: 20, cost: 200 },
-  { id: 'theme',    name: 'Activité à thème',desc: '1x / mois — cuisine, randonnée, vin',  color: '#6b9c91', count: 12, capacity: 16, fill: 70, price: 45, cost: 450 },
-  { id: 'special',  name: 'Soirée Spéciale', desc: '5x / an — Saint-Valentin, Halloween…', color: '#8b6b8b', count: 5,  capacity: 40, fill: 80, price: 60, cost: 1200 },
+  { id: 'speed',    name: 'Speed Dating',    desc: 'Sessions de 5-7 min',                  color: '#e85a4f', count: 0, capacity: 0, fill: 0, price: 0, cost: 0 },
+  { id: 'mixer',    name: 'Mixer Social',    desc: 'Bar / restaurant',                     color: '#d4a574', count: 0, capacity: 0, fill: 0, price: 0, cost: 0 },
+  { id: 'theme',    name: 'Activité à thème',desc: 'Cuisine, randonnée, vin…',             color: '#6b9c91', count: 0, capacity: 0, fill: 0, price: 0, cost: 0 },
+  { id: 'special',  name: 'Soirée Spéciale', desc: 'Saint-Valentin, Halloween…',           color: '#8b6b8b', count: 0, capacity: 0, fill: 0, price: 0, cost: 0 },
 ];
 
 const PERIODS = {
@@ -1045,6 +1088,73 @@ document.querySelectorAll('.period-btn').forEach(btn => {
 // Cost listeners
 ['cost-coord','cost-mktg','cost-misc','cost-stripe','cost-stripe-fixed','noshow-rate']
   .forEach(id => document.getElementById(id).addEventListener('input', recalc));
+
+// ─── PDF EXPORT ─────────────────────────────────────
+const PERIOD_LABELS = { annual: 'Annuel', monthly: 'Mensuel', weekly: 'Hebdomadaire' };
+
+function downloadPdf() {
+  const btn = document.getElementById('pdf-btn');
+  if (!window.html2pdf) {
+    alert("Le module d'export PDF n'a pas pu être chargé. Vérifie ta connexion et réessaie.");
+    return;
+  }
+  const target = document.querySelector('.container');
+  if (!target) return;
+
+  const today = new Date();
+  const stamp = today.toISOString().slice(0, 10);
+  const periodLabel = PERIOD_LABELS[currentPeriod] || currentPeriod;
+
+  btn.disabled = true;
+  btn.style.visibility = 'hidden';
+
+  const opt = {
+    margin: [10, 8, 12, 8],
+    filename: `simulateur-revenus-${currentPeriod}-${stamp}.pdf`,
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: {
+      scale: 2,
+      backgroundColor: '#0d0b0e',
+      useCORS: true,
+      logging: false,
+      windowWidth: target.scrollWidth,
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['.kpi', '.event-row', '.chart-card', '.cost-block'] },
+  };
+
+  html2pdf()
+    .set(opt)
+    .from(target)
+    .toPdf()
+    .get('pdf')
+    .then((pdf) => {
+      const totalPages = pdf.internal.getNumberOfPages();
+      const w = pdf.internal.pageSize.getWidth();
+      const h = pdf.internal.pageSize.getHeight();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(120, 110, 100);
+        const left = `Crush.lu — Simulateur (${periodLabel}) · ${today.toLocaleDateString('fr-FR')}`;
+        const right = `Page ${i} / ${totalPages}`;
+        pdf.text(left, 8, h - 5);
+        pdf.text(right, w - 8, h - 5, { align: 'right' });
+      }
+    })
+    .save()
+    .then(() => {
+      btn.disabled = false;
+      btn.style.visibility = 'visible';
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.style.visibility = 'visible';
+      alert("Une erreur est survenue pendant la génération du PDF.");
+    });
+}
+
+document.getElementById('pdf-btn').addEventListener('click', downloadPdf);
 
 // ─── BOOT ───────────────────────────────────────────
 renderEventRows();
