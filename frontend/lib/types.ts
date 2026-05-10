@@ -33,3 +33,53 @@ export type CustomerSnapshot = {
   email: string;
   phone: string;
 };
+
+export type CrushEventType =
+  | "Cooking workshop"
+  | "Wine tasting"
+  | "Speed dating"
+  | "Outdoor activity"
+  | "Quiz night";
+
+export type PartnershipStage =
+  | "Prospect"
+  | "Negotiating"
+  | "Active"
+  | "Paused"
+  | "Archived";
+
+export type LocationContact = {
+  name: string;
+  role: string;
+  email: string;
+  phone: string;
+};
+
+export type LocationItem = {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  country: string;
+
+  maxCapacity: number;
+  seatedCapacity?: number;
+  hasOutdoorSpace: boolean;
+  hasKitchen: boolean;
+  hasPrivateRoom: boolean;
+  hasSoundSystem: boolean;
+
+  compatibleEventTypes: CrushEventType[];
+
+  partnershipStage: PartnershipStage;
+  primaryContact: LocationContact;
+  accountManager: string;
+  commercialTerms?: string;
+  partnerSince?: string;
+
+  lastContactDate: string;
+  nextAction?: string;
+  nextActionDate?: string;
+  notes: string;
+  tags: string[];
+};

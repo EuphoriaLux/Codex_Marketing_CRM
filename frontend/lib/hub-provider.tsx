@@ -10,8 +10,10 @@ import {
   useState,
 } from "react";
 import { fetchHubData, HubDataSource } from "@/lib/api/hub";
+import { locations as mockLocations } from "@/lib/mock-data";
 import {
   CustomerSnapshot,
+  LocationItem,
   Metric,
   RequestItem,
   ResourceItem,
@@ -23,6 +25,7 @@ type HubState = {
   requests: RequestItem[];
   resources: ResourceItem[];
   timeline: TimelineEvent[];
+  locations: LocationItem[];
   metrics: Metric[];
   source: HubDataSource;
   loading: boolean;
@@ -94,6 +97,7 @@ export function HubProvider({ children }: { children: ReactNode }) {
         requests,
         resources,
         timeline,
+        locations: mockLocations,
         metrics: deriveMetrics(requests, resources),
         source,
         loading,
