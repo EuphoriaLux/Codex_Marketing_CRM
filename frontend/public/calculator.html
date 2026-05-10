@@ -340,6 +340,29 @@
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button { opacity: 0.4; }
 
+  .freq-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .freq-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .freq-row span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    min-width: 28px;
+    font-weight: 500;
+  }
+  .freq-row input[type="number"] {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
   .event-result {
     text-align: right;
     display: flex;
@@ -582,7 +605,7 @@
       <div class="event-header">
         <div></div>
         <div>Type</div>
-        <div style="text-align:right">Évén. / an</div>
+        <div style="text-align:right">Évén. / période</div>
         <div style="text-align:right">Capacité</div>
         <div style="text-align:right">Remplissage %</div>
         <div style="text-align:right">Prix billet €</div>
@@ -682,6 +705,21 @@ const PERIODS = {
 let currentPeriod = 'annual';
 let distributionChart, breakdownChart;
 
+// Canonical state: events per year per type. Three input fields (an/mois/sem.)
+// stay in sync with this single source of truth.
+const FREQ_FIELDS = { year: 1, month: 12, week: 52 };
+const annualCounts = Object.fromEntries(eventTypes.map(t => [t.id, t.count]));
+
+function syncFreqInputs(id, except) {
+  const annual = annualCounts[id];
+  Object.entries(FREQ_FIELDS).forEach(([k, divisor]) => {
+    if (k === except) return;
+    const val = annual / divisor;
+    const rounded = Number.isInteger(val) ? val : Math.round(val * 100) / 100;
+    document.getElementById(`cnt-${k}-${id}`).value = rounded;
+  });
+}
+
 // ─── FORMATTING ─────────────────────────────────────
 const fmtEur = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n));
 const fmtNum = (n) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n));
@@ -694,7 +732,13 @@ function renderEventRows() {
     <div class="event-row">
       <div style="text-align:center"><span class="color-dot" style="background:${t.color}"></span></div>
       <div class="event-name">${t.name}<small>${t.desc}</small></div>
-      <div><input type="number" id="cnt-${t.id}" value="${t.count}" min="0" step="1" /></div>
+      <div>
+        <div class="freq-cell">
+          <div class="freq-row"><span>an</span><input type="number" id="cnt-year-${t.id}" min="0" step="1" /></div>
+          <div class="freq-row"><span>mois</span><input type="number" id="cnt-month-${t.id}" min="0" step="0.5" /></div>
+          <div class="freq-row"><span>sem.</span><input type="number" id="cnt-week-${t.id}" min="0" step="0.1" /></div>
+        </div>
+      </div>
       <div><input type="number" id="cap-${t.id}" value="${t.capacity}" min="0" step="1" /></div>
       <div><input type="number" id="fil-${t.id}" value="${t.fill}" min="0" max="100" step="1" /></div>
       <div><input type="number" id="prc-${t.id}" value="${t.price}" min="0" step="1" /></div>
@@ -707,9 +751,18 @@ function renderEventRows() {
   `).join('');
 
   eventTypes.forEach(t => {
-    ['cnt','cap','fil','prc','cst'].forEach(prefix => {
+    ['cap','fil','prc','cst'].forEach(prefix => {
       document.getElementById(`${prefix}-${t.id}`).addEventListener('input', recalc);
     });
+    Object.keys(FREQ_FIELDS).forEach(period => {
+      document.getElementById(`cnt-${period}-${t.id}`).addEventListener('input', () => {
+        const displayed = +document.getElementById(`cnt-${period}-${t.id}`).value || 0;
+        annualCounts[t.id] = displayed * FREQ_FIELDS[period];
+        syncFreqInputs(t.id, period);
+        recalc();
+      });
+    });
+    syncFreqInputs(t.id, null);
   });
 }
 
@@ -717,7 +770,7 @@ function renderEventRows() {
 function getInputs() {
   const types = eventTypes.map(t => ({
     ...t,
-    count: +document.getElementById(`cnt-${t.id}`).value || 0,
+    count: annualCounts[t.id] || 0,
     capacity: +document.getElementById(`cap-${t.id}`).value || 0,
     fill: +document.getElementById(`fil-${t.id}`).value || 0,
     price: +document.getElementById(`prc-${t.id}`).value || 0,
