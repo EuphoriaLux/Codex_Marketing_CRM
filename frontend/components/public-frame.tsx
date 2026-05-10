@@ -16,7 +16,7 @@ export function PublicFrame({ children }: { children: ReactNode }) {
         </Link>
         <nav className="public-nav" aria-label="Public">
           <Link href="/partnership" className="public-nav-link">
-            Partenariats
+            Proposer un lieu
           </Link>
           <Link href="/login" className="button secondary">
             Espace client
@@ -32,7 +32,7 @@ export function PublicFrame({ children }: { children: ReactNode }) {
           <p>Luxembourg — événements et activations sur mesure.</p>
         </div>
         <div className="public-footer-links">
-          <Link href="/partnership">Devenir partenaire</Link>
+          <Link href="/partnership">Proposer un lieu</Link>
           <Link href="/login">Espace client</Link>
         </div>
       </footer>

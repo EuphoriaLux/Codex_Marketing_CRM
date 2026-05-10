@@ -591,6 +591,21 @@ textarea {
   gap: 1rem;
 }
 
+.public-form-section {
+  margin: 1.4rem 0 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.public-form-section:first-child {
+  margin-top: 0;
+}
+
 .public-consent {
   display: grid;
   grid-template-columns: auto 1fr;
