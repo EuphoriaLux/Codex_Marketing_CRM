@@ -3,17 +3,29 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { PublicFrame } from "@/components/public-frame";
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { getAccessToken } from "@/lib/api/client";
 import { HubProvider } from "@/lib/hub-provider";
 
-const PUBLIC_ROUTES = new Set(["/", "/login", "/auth/callback"]);
+// Routes rendered with the marketing/public chrome (no sidebar, no auth required).
+const PUBLIC_FRAME_ROUTES = ["/partnership"];
 
-function isPublic(pathname: string | null): boolean {
+// Routes that render in the standard Shell but don't require a logged-in user.
+const AUTH_OPEN_ROUTES = new Set(["/", "/login", "/auth/callback"]);
+
+function isPublicFrameRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return PUBLIC_FRAME_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
+
+function isAuthOpen(pathname: string | null): boolean {
   if (!pathname) return false;
   const normalized = pathname.replace(/\/+$/, "") || "/";
-  return PUBLIC_ROUTES.has(normalized);
+  return AUTH_OPEN_ROUTES.has(normalized);
 }
 
 function Shell({ children }: { children: ReactNode }) {
@@ -33,7 +45,8 @@ function Shell({ children }: { children: ReactNode }) {
 export function AppFrame({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const publicRoute = isPublic(pathname);
+  const publicFrame = isPublicFrameRoute(pathname);
+  const authOpen = isAuthOpen(pathname);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -41,11 +54,12 @@ export function AppFrame({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!mounted || publicRoute) return;
+    if (!mounted || publicFrame || authOpen) return;
     if (!getAccessToken()) router.replace("/login");
-  }, [mounted, publicRoute, pathname, router]);
+  }, [mounted, publicFrame, authOpen, pathname, router]);
 
-  if (publicRoute) return <Shell>{children}</Shell>;
+  if (publicFrame) return <PublicFrame>{children}</PublicFrame>;
+  if (authOpen) return <Shell>{children}</Shell>;
   if (!mounted) return null;
   if (!getAccessToken()) return null;
 

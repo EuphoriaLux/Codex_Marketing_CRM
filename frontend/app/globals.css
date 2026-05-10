@@ -537,6 +537,103 @@ textarea {
   gap: 1rem;
 }
 
+.public-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.public-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem clamp(1rem, 5vw, 3rem);
+  border-bottom: 1px solid var(--line);
+  background: rgba(247, 251, 255, 0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.public-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.public-brand-copy {
+  display: grid;
+  line-height: 1.1;
+}
+
+.public-brand-copy strong {
+  font-size: 1.05rem;
+}
+
+.public-brand-copy span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.public-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.public-nav-link {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.public-nav-link:hover {
+  color: var(--text);
+}
+
+.public-main {
+  flex: 1;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 5vw, 3rem);
+  display: grid;
+  gap: 2rem;
+}
+
+.public-page {
+  display: grid;
+  gap: 2rem;
+}
+
+.public-hero {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.public-hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.public-hero-copy {
+  max-width: 60ch;
+  margin: 1rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.public-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -703,6 +800,139 @@ textarea {
   text-decoration: underline;
 }
 
+.public-card {
+  padding: 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+}
+
+.public-card h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+}
+
+.public-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.public-form-block {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+}
+
+.public-form-head {
+  margin-bottom: 1.5rem;
+}
+
+.public-form-head h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+
+.public-form-head p {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+}
+
+.public-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.public-form-section {
+  margin: 1.4rem 0 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.public-form-section:first-child {
+  margin-top: 0;
+}
+
+.public-consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.public-consent input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.2rem;
+}
+
+.public-success {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(95, 146, 114, 0.3);
+  border-radius: 22px;
+  background: rgba(231, 246, 235, 0.7);
+  color: #2d6b46;
+}
+
+.public-success h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.public-success p {
+  margin: 0;
+}
+
+.public-success .button.secondary {
+  justify-self: start;
+}
+
+.public-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem clamp(1rem, 5vw, 3rem);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.public-footer p {
+  margin: 0.2rem 0 0;
+}
+
+.public-footer-links {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.public-footer-links a:hover {
+  color: var(--text);
+}
+
+.form-note code {
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.08);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
 @media (max-width: 1100px) {
   .shell {
     grid-template-columns: 1fr;
@@ -724,7 +954,9 @@ textarea {
   .snapshot-grid,
   .timeline-item,
   .location-stats,
-  .location-meta-grid {
+  .location-meta-grid,
+  .public-grid,
+  .public-form-row {
     grid-template-columns: 1fr;
   }
 
@@ -748,5 +980,11 @@ textarea {
 
   .hero-block {
     padding: 1.25rem;
+  }
+
+  .public-header,
+  .public-footer {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
