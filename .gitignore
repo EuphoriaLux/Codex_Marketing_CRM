@@ -23,6 +23,7 @@ coverage/
 .cache/
 .next/
 frontend/out/
+*.tsbuildinfo
 
 # Python artifacts
 __pycache__/
