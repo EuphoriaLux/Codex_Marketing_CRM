@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "Partenariats — Crush.lu",
+  title: "Proposer un lieu — Crush.lu",
   description:
-    "Sociétés et marques, contactez Crush.lu pour devenir partenaire ou sponsor de nos événements au Luxembourg.",
+    "Vous exploitez une salle, un rooftop, un restaurant ou un espace atypique au Luxembourg ? Proposez votre lieu à Crush.lu pour accueillir nos événements.",
 };
 
 export default function PartnershipLayout({
