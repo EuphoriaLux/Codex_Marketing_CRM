@@ -36,11 +36,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr review "$PR_URL" --approve --body "Auto-approved: trusted author REAPERS013."
+        # Block scalar required: the `--body` argument contains ": " which is
+        # forbidden inside an unquoted YAML plain scalar.
+        run: |
+          gh pr review "$PR_URL" --approve --body "Auto-approved: trusted author REAPERS013."
 
       - name: Squash and merge
         if: steps.gate.outputs.should_run == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge "$PR_URL" --squash --delete-branch
+        run: |
+          gh pr merge "$PR_URL" --squash --delete-branch
