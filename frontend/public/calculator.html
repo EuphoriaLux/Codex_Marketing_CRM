@@ -546,6 +546,60 @@
     .event-row > .event-revenue { display: block; grid-column: 1 / -1; text-align: right; padding-top: 8px; }
     .cost-panel { grid-template-columns: 1fr; }
   }
+
+  /* ── PDF EXPORT MODE ─────────────────────────────── */
+  /* Forces a fixed-width, desktop-style layout while html2canvas
+     captures the page so the PDF doesn't depend on the iframe's width
+     and never falls back into the mobile media query. */
+  body.is-printing { background: var(--bg); }
+  body.is-printing::before { display: none; }
+  body.is-printing .container {
+    width: 1100px !important;
+    max-width: 1100px !important;
+    margin: 0 !important;
+    padding: 32px 32px 40px !important;
+  }
+  body.is-printing .kpis {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+  }
+  body.is-printing .kpi { overflow: visible !important; padding: 18px 18px !important; }
+  body.is-printing .kpi-value { font-size: 26px !important; }
+  body.is-printing h1 { font-size: 38px !important; }
+  body.is-printing .formula-strip { flex-wrap: nowrap !important; padding: 14px 18px !important; }
+  body.is-printing .formula-item { min-width: 0 !important; }
+  body.is-printing .f-value { font-size: 15px !important; }
+  body.is-printing .chart-grid {
+    grid-template-columns: 1.4fr 1fr !important;
+    gap: 16px !important;
+  }
+  body.is-printing .chart-wrapper { height: 220px !important; }
+  body.is-printing .event-row,
+  body.is-printing .event-header {
+    grid-template-columns: 56px minmax(160px, 1.4fr) repeat(5, 1fr) 1.3fr !important;
+    font-size: 13px !important;
+  }
+  body.is-printing .event-header > div:nth-child(n+5),
+  body.is-printing .event-row > div:nth-child(n+5) {
+    display: block !important;
+  }
+  body.is-printing .event-row > .event-revenue {
+    display: flex !important;
+    grid-column: auto !important;
+    text-align: right !important;
+    padding-top: 0 !important;
+  }
+  body.is-printing .cost-panel {
+    grid-template-columns: 1fr 1fr !important;
+    padding: 22px !important;
+    gap: 24px !important;
+  }
+  body.is-printing .pdf-btn { display: none !important; }
+  body.is-printing section { page-break-inside: avoid; }
+  body.is-printing .kpi,
+  body.is-printing .event-row,
+  body.is-printing .chart-card,
+  body.is-printing .cost-block { page-break-inside: avoid; }
 </style>
 </head>
 <body>
@@ -1092,6 +1146,8 @@ document.querySelectorAll('.period-btn').forEach(btn => {
 // ─── PDF EXPORT ─────────────────────────────────────
 const PERIOD_LABELS = { annual: 'Annuel', monthly: 'Mensuel', weekly: 'Hebdomadaire' };
 
+const PDF_RENDER_WIDTH = 1100;
+
 function downloadPdf() {
   const btn = document.getElementById('pdf-btn');
   if (!window.html2pdf) {
@@ -1106,10 +1162,22 @@ function downloadPdf() {
   const periodLabel = PERIOD_LABELS[currentPeriod] || currentPeriod;
 
   btn.disabled = true;
-  btn.style.visibility = 'hidden';
+
+  // Switch to a fixed-width "print" layout so the capture is independent
+  // of the iframe / viewport size.
+  document.body.classList.add('is-printing');
+  if (distributionChart) distributionChart.resize();
+  if (breakdownChart) breakdownChart.resize();
+
+  const cleanup = () => {
+    document.body.classList.remove('is-printing');
+    if (distributionChart) distributionChart.resize();
+    if (breakdownChart) breakdownChart.resize();
+    btn.disabled = false;
+  };
 
   const opt = {
-    margin: [10, 8, 12, 8],
+    margin: [10, 8, 14, 8],
     filename: `simulateur-revenus-${currentPeriod}-${stamp}.pdf`,
     image: { type: 'jpeg', quality: 0.95 },
     html2canvas: {
@@ -1117,41 +1185,44 @@ function downloadPdf() {
       backgroundColor: '#0d0b0e',
       useCORS: true,
       logging: false,
-      windowWidth: target.scrollWidth,
+      windowWidth: PDF_RENDER_WIDTH,
+      width: PDF_RENDER_WIDTH,
+      scrollX: 0,
+      scrollY: 0,
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['.kpi', '.event-row', '.chart-card', '.cost-block'] },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['.kpi', '.event-row', '.chart-card', '.cost-block', 'section'] },
   };
 
-  html2pdf()
-    .set(opt)
-    .from(target)
-    .toPdf()
-    .get('pdf')
-    .then((pdf) => {
-      const totalPages = pdf.internal.getNumberOfPages();
-      const w = pdf.internal.pageSize.getWidth();
-      const h = pdf.internal.pageSize.getHeight();
-      for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(8);
-        pdf.setTextColor(120, 110, 100);
-        const left = `Crush.lu — Simulateur (${periodLabel}) · ${today.toLocaleDateString('fr-FR')}`;
-        const right = `Page ${i} / ${totalPages}`;
-        pdf.text(left, 8, h - 5);
-        pdf.text(right, w - 8, h - 5, { align: 'right' });
-      }
-    })
-    .save()
-    .then(() => {
-      btn.disabled = false;
-      btn.style.visibility = 'visible';
-    })
-    .catch(() => {
-      btn.disabled = false;
-      btn.style.visibility = 'visible';
-      alert("Une erreur est survenue pendant la génération du PDF.");
-    });
+  // Give the browser a frame to apply the print layout + chart resize
+  // before html2canvas snapshots the DOM.
+  setTimeout(() => {
+    html2pdf()
+      .set(opt)
+      .from(target)
+      .toPdf()
+      .get('pdf')
+      .then((pdf) => {
+        const totalPages = pdf.internal.getNumberOfPages();
+        const w = pdf.internal.pageSize.getWidth();
+        const h = pdf.internal.pageSize.getHeight();
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(8);
+          pdf.setTextColor(120, 110, 100);
+          const left = `Crush.lu — Simulateur (${periodLabel}) · ${today.toLocaleDateString('fr-FR')}`;
+          const right = `Page ${i} / ${totalPages}`;
+          pdf.text(left, 8, h - 5);
+          pdf.text(right, w - 8, h - 5, { align: 'right' });
+        }
+      })
+      .save()
+      .then(cleanup)
+      .catch(() => {
+        cleanup();
+        alert("Une erreur est survenue pendant la génération du PDF.");
+      });
+  }, 80);
 }
 
 document.getElementById('pdf-btn').addEventListener('click', downloadPdf);
