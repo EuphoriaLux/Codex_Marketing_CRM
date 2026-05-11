@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --bg: #0d0b0e;
@@ -546,60 +546,6 @@
     .event-row > .event-revenue { display: block; grid-column: 1 / -1; text-align: right; padding-top: 8px; }
     .cost-panel { grid-template-columns: 1fr; }
   }
-
-  /* ── PDF EXPORT MODE ─────────────────────────────── */
-  /* Forces a fixed-width, desktop-style layout while html2canvas
-     captures the page so the PDF doesn't depend on the iframe's width
-     and never falls back into the mobile media query. */
-  body.is-printing { background: var(--bg); }
-  body.is-printing::before { display: none; }
-  body.is-printing .container {
-    width: 1100px !important;
-    max-width: 1100px !important;
-    margin: 0 !important;
-    padding: 32px 32px 40px !important;
-  }
-  body.is-printing .kpis {
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 12px !important;
-  }
-  body.is-printing .kpi { overflow: visible !important; padding: 18px 18px !important; }
-  body.is-printing .kpi-value { font-size: 26px !important; }
-  body.is-printing h1 { font-size: 38px !important; }
-  body.is-printing .formula-strip { flex-wrap: nowrap !important; padding: 14px 18px !important; }
-  body.is-printing .formula-item { min-width: 0 !important; }
-  body.is-printing .f-value { font-size: 15px !important; }
-  body.is-printing .chart-grid {
-    grid-template-columns: 1.4fr 1fr !important;
-    gap: 16px !important;
-  }
-  body.is-printing .chart-wrapper { height: 220px !important; }
-  body.is-printing .event-row,
-  body.is-printing .event-header {
-    grid-template-columns: 56px minmax(160px, 1.4fr) repeat(5, 1fr) 1.3fr !important;
-    font-size: 13px !important;
-  }
-  body.is-printing .event-header > div:nth-child(n+5),
-  body.is-printing .event-row > div:nth-child(n+5) {
-    display: block !important;
-  }
-  body.is-printing .event-row > .event-revenue {
-    display: flex !important;
-    grid-column: auto !important;
-    text-align: right !important;
-    padding-top: 0 !important;
-  }
-  body.is-printing .cost-panel {
-    grid-template-columns: 1fr 1fr !important;
-    padding: 22px !important;
-    gap: 24px !important;
-  }
-  body.is-printing .pdf-btn { display: none !important; }
-  body.is-printing section { page-break-inside: avoid; }
-  body.is-printing .kpi,
-  body.is-printing .event-row,
-  body.is-printing .chart-card,
-  body.is-printing .cost-block { page-break-inside: avoid; }
 </style>
 </head>
 <body>
@@ -1143,86 +1089,551 @@ document.querySelectorAll('.period-btn').forEach(btn => {
 ['cost-coord','cost-mktg','cost-misc','cost-stripe','cost-stripe-fixed','noshow-rate']
   .forEach(id => document.getElementById(id).addEventListener('input', recalc));
 
-// ─── PDF EXPORT ─────────────────────────────────────
+// ─── PDF EXPORT (programmatic via jsPDF) ────────────
+// We build the PDF directly with jsPDF primitives instead of capturing the
+// DOM. The previous html2canvas approach failed inside the Next.js iframe
+// because the iframe's body width clamps the captured canvas, no matter
+// what windowWidth/width is passed — the right half ends up cropped and
+// the dark background bleeds through. Drawing the PDF programmatically is
+// independent of the iframe's viewport and produces a sharp, vector-style
+// document every time.
 const PERIOD_LABELS = { annual: 'Annuel', monthly: 'Mensuel', weekly: 'Hebdomadaire' };
 
-const PDF_RENDER_WIDTH = 1100;
+const PDF_COLORS = {
+  bg:         [13, 11, 14],
+  surface:    [22, 19, 26],
+  surface2:   [31, 26, 37],
+  border:     [42, 35, 48],
+  text:       [245, 237, 228],
+  textDim:    [168, 153, 141],
+  textMuted:  [107, 95, 85],
+  accent:     [232, 90, 79],
+  accentSoft: [245, 161, 149],
+  gold:       [212, 165, 116],
+  positive:   [127, 176, 105],
+  negative:   [196, 90, 90],
+};
+
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  return [parseInt(h.slice(0,2), 16), parseInt(h.slice(2,4), 16), parseInt(h.slice(4,6), 16)];
+}
+
+function setFill(doc, c) { doc.setFillColor(c[0], c[1], c[2]); }
+function setText(doc, c) { doc.setTextColor(c[0], c[1], c[2]); }
+function setStroke(doc, c) { doc.setDrawColor(c[0], c[1], c[2]); }
+
+// Render a transient Chart.js instance on a detached canvas and return a
+// PNG dataURL. Avoids depending on the on-page chart's pixel size.
+function renderChartImage(type, data, options, widthPx, heightPx) {
+  const canvas = document.createElement('canvas');
+  canvas.width = widthPx;
+  canvas.height = heightPx;
+  canvas.style.width = widthPx + 'px';
+  canvas.style.height = heightPx + 'px';
+  canvas.style.position = 'fixed';
+  canvas.style.left = '-99999px';
+  canvas.style.top = '0';
+  document.body.appendChild(canvas);
+  let url = '';
+  try {
+    const chart = new Chart(canvas.getContext('2d'), {
+      type,
+      data,
+      options: Object.assign({}, options, {
+        responsive: false,
+        animation: false,
+        devicePixelRatio: 1,
+      }),
+    });
+    chart.update('none');
+    chart.draw();
+    url = canvas.toDataURL('image/png');
+    chart.destroy();
+  } finally {
+    canvas.remove();
+  }
+  return url;
+}
 
 function downloadPdf() {
   const btn = document.getElementById('pdf-btn');
-  if (!window.html2pdf) {
+  const JsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  if (!JsPDF) {
     alert("Le module d'export PDF n'a pas pu être chargé. Vérifie ta connexion et réessaie.");
     return;
   }
-  const target = document.querySelector('.container');
-  if (!target) return;
+  btn.disabled = true;
+  try {
+    buildPdf(JsPDF);
+  } catch (err) {
+    console.error('PDF export failed:', err);
+    alert("Une erreur est survenue pendant la génération du PDF.\n" + (err && err.message ? err.message : ''));
+  } finally {
+    btn.disabled = false;
+  }
+}
 
+function buildPdf(JsPDF) {
+  const r = compute();
+  const inp = getInputs();
+  const period = PERIODS[currentPeriod];
+  const div = period.divisor;
   const today = new Date();
   const stamp = today.toISOString().slice(0, 10);
   const periodLabel = PERIOD_LABELS[currentPeriod] || currentPeriod;
 
-  btn.disabled = true;
-
-  // Switch to a fixed-width "print" layout so the capture is independent
-  // of the iframe / viewport size.
-  document.body.classList.add('is-printing');
-  if (distributionChart) distributionChart.resize();
-  if (breakdownChart) breakdownChart.resize();
-
-  const cleanup = () => {
-    document.body.classList.remove('is-printing');
-    if (distributionChart) distributionChart.resize();
-    if (breakdownChart) breakdownChart.resize();
-    btn.disabled = false;
-  };
-
-  const opt = {
-    margin: [10, 8, 14, 8],
-    filename: `simulateur-revenus-${currentPeriod}-${stamp}.pdf`,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: {
-      scale: 2,
-      backgroundColor: '#0d0b0e',
-      useCORS: true,
-      logging: false,
-      windowWidth: PDF_RENDER_WIDTH,
-      width: PDF_RENDER_WIDTH,
-      scrollX: 0,
-      scrollY: 0,
+  // ── Off-screen chart rendering at fixed pixel sizes ───────────────
+  const distLabels = period.binNames;
+  const distData = distributionData(r.totalRevenue, currentPeriod);
+  const distImg = renderChartImage('bar', {
+    labels: distLabels,
+    datasets: [{
+      label: 'Revenu',
+      data: distData,
+      backgroundColor: 'rgba(232, 90, 79, 0.55)',
+      borderColor: 'rgba(232, 90, 79, 1)',
+      borderWidth: 0,
+      borderRadius: 3,
+    }],
+  }, {
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#a8998d', font: { size: 11 } } },
+      y: {
+        grid: { color: 'rgba(168,153,141,0.18)' },
+        ticks: { color: '#a8998d', font: { size: 11 }, callback: (v) => fmtEur(v) + ' €' },
+      },
     },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['.kpi', '.event-row', '.chart-card', '.cost-block', 'section'] },
-  };
+  }, 1100, 480);
 
-  // Give the browser a frame to apply the print layout + chart resize
-  // before html2canvas snapshots the DOM.
-  setTimeout(() => {
-    html2pdf()
-      .set(opt)
-      .from(target)
-      .toPdf()
-      .get('pdf')
-      .then((pdf) => {
-        const totalPages = pdf.internal.getNumberOfPages();
-        const w = pdf.internal.pageSize.getWidth();
-        const h = pdf.internal.pageSize.getHeight();
-        for (let i = 1; i <= totalPages; i++) {
-          pdf.setPage(i);
-          pdf.setFontSize(8);
-          pdf.setTextColor(120, 110, 100);
-          const left = `Crush.lu — Simulateur (${periodLabel}) · ${today.toLocaleDateString('fr-FR')}`;
-          const right = `Page ${i} / ${totalPages}`;
-          pdf.text(left, 8, h - 5);
-          pdf.text(right, w - 8, h - 5, { align: 'right' });
-        }
-      })
-      .save()
-      .then(cleanup)
-      .catch(() => {
-        cleanup();
-        alert("Une erreur est survenue pendant la génération du PDF.");
-      });
-  }, 80);
+  const breakdownLabels = r.perType.map(t => t.name);
+  const breakdownValues = r.perType.map(t => t.annualRevenue);
+  const breakdownColors = r.perType.map(t => t.color);
+  const hasBreakdownData = breakdownValues.some(v => v > 0);
+  const breakImg = hasBreakdownData ? renderChartImage('doughnut', {
+    labels: breakdownLabels,
+    datasets: [{
+      data: breakdownValues,
+      backgroundColor: breakdownColors,
+      borderColor: '#16131a',
+      borderWidth: 3,
+    }],
+  }, {
+    maintainAspectRatio: false,
+    cutout: '62%',
+    plugins: { legend: { display: false } },
+  }, 540, 540) : null;
+
+  // ── Document setup ───────────────────────────────────────────────
+  const doc = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const W = 210, H = 297, M = 12;
+  const CW = W - 2 * M; // 186mm content width
+
+  function paintBg() {
+    setFill(doc, PDF_COLORS.bg);
+    doc.rect(0, 0, W, H, 'F');
+  }
+  paintBg();
+
+  let y = M + 2;
+
+  // ── Header ───────────────────────────────────────────────────────
+  setFill(doc, PDF_COLORS.accent);
+  doc.circle(M + 1.4, y + 2.3, 1.2, 'F');
+  setText(doc, PDF_COLORS.accent);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Crush.lu — outil interne', M + 4, y + 3);
+
+  setText(doc, PDF_COLORS.text);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text('Simulateur de revenus événements', M, y + 13);
+
+  setText(doc, PDF_COLORS.textDim);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(9);
+  doc.text(`Période : ${periodLabel}  ·  Généré le ${today.toLocaleDateString('fr-FR')}`, M, y + 20);
+
+  setStroke(doc, PDF_COLORS.border);
+  doc.setLineWidth(0.2);
+  doc.line(M, y + 24, M + CW, y + 24);
+
+  y += 28;
+
+  // ── KPIs (4 cards, single row) ───────────────────────────────────
+  const kpiGap = 4;
+  const kpiW = (CW - 3 * kpiGap) / 4;
+  const kpiH = 22;
+  const netPositive = r.annualNet >= 0;
+  const kpis = [
+    {
+      label: 'Revenu brut',
+      value: fmtEur(r.periodRevenue),
+      suffix: '€',
+      meta: `par ${period.label} · ${fmtEur(r.totalRevenue)} € / an`,
+      valueColor: PDF_COLORS.accentSoft,
+      featured: true,
+    },
+    {
+      label: 'Coûts événements',
+      value: fmtEur(r.totalEventCost / div),
+      suffix: '€',
+      meta: `${fmtEur(r.totalEventCost)} € / an · ${fmtNum(r.totalEvents)} évén.`,
+      valueColor: PDF_COLORS.text,
+    },
+    {
+      label: 'Charges fixes & frais',
+      value: fmtEur((r.annualFixed + r.totalStripe) / div),
+      suffix: '€',
+      meta: `Fixes ${fmtEur(r.annualFixed)} € + Stripe ${fmtEur(r.totalStripe)} € / an`,
+      valueColor: PDF_COLORS.text,
+    },
+    {
+      label: 'Marge nette',
+      value: (r.periodNet < 0 ? '-' : '') + fmtEur(Math.abs(r.periodNet)),
+      suffix: '€',
+      meta: `Marge: ${fmtPct(r.margin)} · ${fmtEur(r.annualNet)} € / an`,
+      valueColor: netPositive ? PDF_COLORS.positive : PDF_COLORS.negative,
+    },
+  ];
+
+  kpis.forEach((kpi, i) => {
+    const x = M + i * (kpiW + kpiGap);
+    setFill(doc, PDF_COLORS.surface);
+    doc.roundedRect(x, y, kpiW, kpiH, 1.5, 1.5, 'F');
+    setStroke(doc, kpi.featured ? PDF_COLORS.accent : PDF_COLORS.border);
+    doc.setLineWidth(kpi.featured ? 0.4 : 0.2);
+    doc.roundedRect(x, y, kpiW, kpiH, 1.5, 1.5, 'S');
+
+    setText(doc, PDF_COLORS.textMuted);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.text(kpi.label.toUpperCase(), x + 3, y + 4.2);
+
+    setText(doc, kpi.valueColor);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(17);
+    doc.text(kpi.value, x + 3, y + 12);
+    const valWidth = doc.getTextWidth(kpi.value);
+    setText(doc, PDF_COLORS.textDim);
+    doc.setFontSize(10);
+    doc.text(' ' + kpi.suffix, x + 3 + valWidth, y + 12);
+
+    setText(doc, PDF_COLORS.textDim);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    const metaLines = doc.splitTextToSize(kpi.meta, kpiW - 6);
+    doc.text(metaLines[0] || '', x + 3, y + 17.5);
+    if (metaLines[1]) doc.text(metaLines[1], x + 3, y + 20.3);
+  });
+
+  y += kpiH + 5;
+
+  // ── Formula strip ────────────────────────────────────────────────
+  const formulaH = 14;
+  setFill(doc, PDF_COLORS.surface);
+  doc.roundedRect(M, y, CW, formulaH, 1.5, 1.5, 'F');
+  setStroke(doc, PDF_COLORS.border);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(M, y, CW, formulaH, 1.5, 1.5, 'S');
+
+  const periodEventCost = r.totalEventCost / div;
+  const periodStripe = r.totalStripe / div;
+  const periodFixed = r.annualFixed / div;
+  const fItems = [
+    { label: 'Revenu billetterie', value: fmtEur(r.periodRevenue) + ' €', op: null,  color: PDF_COLORS.accentSoft, bold: false },
+    { label: 'Coûts événements',   value: fmtEur(periodEventCost) + ' €', op: '−', color: PDF_COLORS.text,    bold: false },
+    { label: 'Frais Stripe',       value: fmtEur(periodStripe) + ' €',    op: '−', color: PDF_COLORS.text,    bold: false },
+    { label: 'Charges fixes',      value: fmtEur(periodFixed) + ' €',     op: '−', color: PDF_COLORS.text,    bold: false },
+    { label: 'Marge nette',        value: (r.periodNet < 0 ? '-' : '') + fmtEur(Math.abs(r.periodNet)) + ' €', op: '=', color: PDF_COLORS.accentSoft, bold: true, accent: true },
+  ];
+  const fOpW = 5;
+  const fItemW = (CW - 4 * fOpW) / 5;
+  fItems.forEach((it, i) => {
+    const x = M + i * (fItemW + fOpW);
+    if (it.op && i > 0) {
+      setText(doc, PDF_COLORS.textMuted);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(13);
+      doc.text(it.op, x - fOpW + 0.5, y + 9);
+    }
+    setText(doc, it.accent ? PDF_COLORS.accent : PDF_COLORS.textMuted);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6);
+    doc.text(it.label.toUpperCase(), x + 2, y + 5);
+    setText(doc, it.color);
+    doc.setFont('helvetica', it.bold ? 'bold' : 'normal');
+    doc.setFontSize(11);
+    doc.text(it.value, x + 2, y + 11);
+  });
+
+  y += formulaH + 4;
+
+  // ── Participants strip ───────────────────────────────────────────
+  const avgTicket = r.totalTickets > 0 ? r.totalRevenue / r.totalTickets : 0;
+  setText(doc, PDF_COLORS.textDim);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(9);
+  const partLine = `${fmtNum(r.periodParticipants)} participants par ${period.label}   ·   ${fmtNum(r.periodEvents)} événements   ·   Ticket moyen ${fmtEur(avgTicket)} €`;
+  doc.text(partLine, W / 2, y + 3, { align: 'center' });
+
+  y += 8;
+
+  // ── Section: event table ─────────────────────────────────────────
+  function sectionHeader(num, title, hint) {
+    setText(doc, PDF_COLORS.accent);
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(11);
+    doc.text(num, M, y + 4);
+    setText(doc, PDF_COLORS.text);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(title, M + 7, y + 4);
+    if (hint) {
+      setText(doc, PDF_COLORS.textMuted);
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7.5);
+      doc.text(hint, M + CW, y + 4, { align: 'right' });
+    }
+    setStroke(doc, PDF_COLORS.border);
+    doc.setLineWidth(0.2);
+    doc.line(M, y + 6, M + CW, y + 6);
+    y += 9;
+  }
+
+  sectionHeader('01.', 'Configuration des événements', `Période affichée : ${periodLabel.toLowerCase()}`);
+
+  // Table columns (total = 186mm)
+  // dot(7) | type(46) | nbPeriod(22) | cap(18) | fill(18) | price(20) | costEv(22) | netResult(33)
+  const cols = [
+    { w: 7,  label: '',                align: 'center' },
+    { w: 46, label: 'TYPE',             align: 'left' },
+    { w: 22, label: 'NB / ' + period.label.toUpperCase(), align: 'right' },
+    { w: 18, label: 'CAPACITÉ',         align: 'right' },
+    { w: 18, label: 'REMPLI %',         align: 'right' },
+    { w: 20, label: 'PRIX €',           align: 'right' },
+    { w: 22, label: 'COÛT/ÉVÉN. €',     align: 'right' },
+    { w: 33, label: 'COÛT & NET / ' + period.label.toUpperCase(), align: 'right' },
+  ];
+
+  // Header row
+  const tHeaderH = 7;
+  setFill(doc, PDF_COLORS.surface2);
+  doc.rect(M, y, CW, tHeaderH, 'F');
+  let cx = M;
+  cols.forEach(col => {
+    if (col.label) {
+      setText(doc, PDF_COLORS.textMuted);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(6);
+      const tx = col.align === 'right' ? cx + col.w - 2 : (col.align === 'center' ? cx + col.w / 2 : cx + 2);
+      doc.text(col.label, tx, y + 4.5, { align: col.align });
+    }
+    cx += col.w;
+  });
+  y += tHeaderH;
+
+  // Rows
+  const rowH = 11;
+  r.perType.forEach((t, idx) => {
+    setFill(doc, idx % 2 === 0 ? PDF_COLORS.surface : PDF_COLORS.surface);
+    doc.rect(M, y, CW, rowH, 'F');
+    setStroke(doc, PDF_COLORS.border);
+    doc.setLineWidth(0.1);
+    doc.line(M, y + rowH, M + CW, y + rowH);
+
+    cx = M;
+    const dotColor = hexToRgb(t.color);
+    setFill(doc, dotColor);
+    doc.circle(cx + cols[0].w / 2, y + rowH / 2, 1.5, 'F');
+    cx += cols[0].w;
+
+    setText(doc, PDF_COLORS.text);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text(t.name, cx + 2, y + 4.6);
+    setText(doc, PDF_COLORS.textMuted);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.text(t.desc, cx + 2, y + 8.2);
+    cx += cols[1].w;
+
+    const annualEvents = t.annualEvents;
+    const periodEventsCount = annualEvents / div;
+    const periodEventsRounded = Number.isInteger(periodEventsCount) ? periodEventsCount : Math.round(periodEventsCount * 100) / 100;
+    setText(doc, PDF_COLORS.text);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(String(periodEventsRounded), cx + cols[2].w - 2, y + 5.2, { align: 'right' });
+    setText(doc, PDF_COLORS.textMuted);
+    doc.setFontSize(6.5);
+    doc.text(`(${fmtNum(annualEvents)}/an)`, cx + cols[2].w - 2, y + 8.6, { align: 'right' });
+    cx += cols[2].w;
+
+    setText(doc, PDF_COLORS.text);
+    doc.setFontSize(9);
+    doc.text(String(t.capacity), cx + cols[3].w - 2, y + rowH / 2 + 1, { align: 'right' });
+    cx += cols[3].w;
+
+    doc.text(t.fill + ' %', cx + cols[4].w - 2, y + rowH / 2 + 1, { align: 'right' });
+    cx += cols[4].w;
+
+    doc.text(fmtEur(t.price) + ' €', cx + cols[5].w - 2, y + rowH / 2 + 1, { align: 'right' });
+    cx += cols[5].w;
+
+    doc.text(fmtEur(t.cost) + ' €', cx + cols[6].w - 2, y + rowH / 2 + 1, { align: 'right' });
+    cx += cols[6].w;
+
+    const tPeriodCost = t.annualEventCost / div;
+    const tPeriodNet = t.annualNet / div;
+    setText(doc, PDF_COLORS.textMuted);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('Coût', cx + 2, y + 4.6);
+    setText(doc, PDF_COLORS.textDim);
+    doc.setFontSize(8.5);
+    doc.text(fmtEur(tPeriodCost) + ' €', cx + cols[7].w - 2, y + 4.6, { align: 'right' });
+    setText(doc, PDF_COLORS.textMuted);
+    doc.setFontSize(7);
+    doc.text('Net', cx + 2, y + 8.6);
+    setText(doc, tPeriodNet >= 0 ? PDF_COLORS.accentSoft : PDF_COLORS.negative);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text((tPeriodNet < 0 ? '-' : '') + fmtEur(Math.abs(tPeriodNet)) + ' €', cx + cols[7].w - 2, y + 8.8, { align: 'right' });
+
+    y += rowH;
+  });
+
+  y += 5;
+
+  // ── Section: costs ───────────────────────────────────────────────
+  sectionHeader('02.', 'Charges fixes', 'Réparties au prorata sur la période');
+
+  const costPanelH = 30;
+  setFill(doc, PDF_COLORS.surface);
+  doc.roundedRect(M, y, CW, costPanelH, 1.5, 1.5, 'F');
+  setStroke(doc, PDF_COLORS.border);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(M, y, CW, costPanelH, 1.5, 1.5, 'S');
+
+  const colGap = 6;
+  const colW = (CW - colGap) / 2;
+
+  function drawCostBlock(xb, label, items) {
+    setText(doc, PDF_COLORS.textMuted);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.text(label.toUpperCase(), xb + 4, y + 4.6);
+    let yi = y + 10;
+    items.forEach(it => {
+      setText(doc, PDF_COLORS.textDim);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      const labelLines = doc.splitTextToSize(it.label, colW - 32);
+      doc.text(labelLines[0], xb + 4, yi);
+      setText(doc, PDF_COLORS.text);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.text(it.value, xb + colW - 4, yi, { align: 'right' });
+      yi += 6.5;
+    });
+  }
+
+  drawCostBlock(M, 'Frais opérationnels annuels', [
+    { label: 'Coordination & logistique',    value: fmtEur(inp.coordCost) + ' €' },
+    { label: 'Marketing événementiel ciblé', value: fmtEur(inp.mktgCost) + ' €' },
+    { label: 'Assurance & divers',           value: fmtEur(inp.miscCost) + ' €' },
+  ]);
+  drawCostBlock(M + colW + colGap, 'Paramètres de transaction', [
+    { label: 'Frais Stripe (% sur billetterie)', value: (inp.stripePct * 100).toFixed(2).replace(/\.?0+$/, '').replace('.', ',') + ' %' },
+    { label: 'Frais fixes Stripe / billet',      value: inp.stripeFix.toFixed(2).replace('.', ',') + ' €' },
+    { label: 'Taux no-show',                     value: Math.round(inp.noShow * 100) + ' %' },
+  ]);
+
+  y += costPanelH + 5;
+
+  // ── Section: charts ──────────────────────────────────────────────
+  sectionHeader('03.', 'Visualisations', 'Distribution & répartition');
+
+  const chart1W = CW * 0.6 - 2;
+  const chart2W = CW - chart1W - 4;
+  const chartCardH = Math.min(70, H - M - 8 - y);
+
+  // Distribution card
+  setFill(doc, PDF_COLORS.surface);
+  doc.roundedRect(M, y, chart1W, chartCardH, 1.5, 1.5, 'F');
+  setStroke(doc, PDF_COLORS.border);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(M, y, chart1W, chartCardH, 1.5, 1.5, 'S');
+  setText(doc, PDF_COLORS.text);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('Distribution sur la période', M + 4, y + 5);
+  setText(doc, PDF_COLORS.textMuted);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.text(`${distLabels.length} ${period.binLabel} — revenu brut`, M + 4, y + 9);
+  if (distImg) {
+    doc.addImage(distImg, 'PNG', M + 3, y + 11, chart1W - 6, chartCardH - 14);
+  }
+
+  // Breakdown card
+  const xR = M + chart1W + 4;
+  setFill(doc, PDF_COLORS.surface);
+  doc.roundedRect(xR, y, chart2W, chartCardH, 1.5, 1.5, 'F');
+  setStroke(doc, PDF_COLORS.border);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(xR, y, chart2W, chartCardH, 1.5, 1.5, 'S');
+  setText(doc, PDF_COLORS.text);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('Répartition par type', xR + 4, y + 5);
+  setText(doc, PDF_COLORS.textMuted);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.text('Contribution au revenu total', xR + 4, y + 9);
+
+  const legendH = r.perType.length * 4.6 + 2;
+  const donutAreaH = chartCardH - 12 - legendH;
+  const donutSize = Math.min(donutAreaH, chart2W - 10);
+  if (breakImg && donutSize > 10) {
+    doc.addImage(breakImg, 'PNG', xR + (chart2W - donutSize) / 2, y + 11, donutSize, donutSize);
+  }
+  let ly = y + 12 + donutAreaH;
+  r.perType.forEach(t => {
+    const pct = r.totalRevenue ? (t.annualRevenue / r.totalRevenue * 100) : 0;
+    setFill(doc, hexToRgb(t.color));
+    doc.circle(xR + 5, ly + 1.3, 1.1, 'F');
+    setText(doc, PDF_COLORS.text);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.text(t.name, xR + 8, ly + 2);
+    setText(doc, PDF_COLORS.accentSoft);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    const valueText = fmtEur(t.annualRevenue / div) + ' €';
+    doc.text(valueText, xR + chart2W - 4, ly + 2, { align: 'right' });
+    setText(doc, PDF_COLORS.textMuted);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    const valueW = doc.getTextWidth(valueText);
+    doc.text(fmtPct(pct), xR + chart2W - 4 - valueW - 2, ly + 2, { align: 'right' });
+    ly += 4.6;
+  });
+
+  y += chartCardH + 3;
+
+  // ── Footer ───────────────────────────────────────────────────────
+  setText(doc, PDF_COLORS.textMuted);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.text(`Crush.lu — Simulateur (${periodLabel}) · ${today.toLocaleDateString('fr-FR')}`, M, H - 5);
+  doc.text('Page 1 / 1', W - M, H - 5, { align: 'right' });
+
+  doc.save(`simulateur-revenus-${currentPeriod}-${stamp}.pdf`);
 }
 
 document.getElementById('pdf-btn').addEventListener('click', downloadPdf);
