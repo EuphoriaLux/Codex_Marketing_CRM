@@ -86,6 +86,8 @@ export type LocationItem = {
 
 export type PaymentStatus = "Paid" | "Pending" | "Overdue" | "Scheduled";
 
+export type PaymentMethod = "Card" | "Transfer" | "Cash" | "Payconiq";
+
 export type PaymentInItem = {
   id: string;
   date: string;
@@ -94,7 +96,18 @@ export type PaymentInItem = {
   clientName?: string;
   status: PaymentStatus;
   reference?: string;
+  paymentMethod: PaymentMethod;
+  receiptUrl?: string;
 };
+
+export type PaymentOutCategory =
+  | "Lieu"
+  | "Marketing"
+  | "Tech"
+  | "Fournitures"
+  | "Autre";
+
+export type DepositStatus = "deposit" | "balance" | "full";
 
 export type PaymentOutItem = {
   id: string;
@@ -104,14 +117,43 @@ export type PaymentOutItem = {
   payee: string;
   description: string;
   status: PaymentStatus;
+  paymentMethod: PaymentMethod;
+  category: PaymentOutCategory;
+  depositStatus?: DepositStatus;
+  receiptUrl?: string;
 };
 
 export type PayrollItem = {
   id: string;
   date: string;
   amount: number;
+  grossSalary: number;
+  employerCharges: number;
   employeeName: string;
   category: "Salary" | "Expense" | "Bonus";
   description: string;
   status: PaymentStatus;
+  paymentMethod: PaymentMethod;
+  receiptUrl?: string;
+};
+
+export type RefundItem = {
+  id: string;
+  date: string;
+  amount: number;
+  participantName: string;
+  eventName: string;
+  reason: string;
+  status: PaymentStatus;
+};
+
+export type EventProfitability = {
+  id: string;
+  eventName: string;
+  eventDate: string;
+  ticketRevenue: number;
+  venueCost: number;
+  suppliesCost: number;
+  otherCosts: number;
+  refunds: number;
 };

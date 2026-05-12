@@ -411,9 +411,305 @@ textarea {
   color: #1d4ed8;
 }
 
+.pill.deposit {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.pill.balance {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
 .timeline-item {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);
+}
+
+/* Accounting page */
+.accounting-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  gap: 1rem;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .accounting-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.accounting-toolbar .search-input {
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  background: white;
+}
+
+.accounting-toolbar .period-select {
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  background: white;
+}
+
+.accounting-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.count-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.55rem;
+  background: var(--accent-soft, #eef2ff);
+  color: var(--accent-deep, #3730a3);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.export-btn {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.export-btn:hover {
+  background: #f8fafc;
+}
+
+.table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table th.sortable:hover {
+  color: var(--accent-deep, #3730a3);
+}
+
+.sort-chevron {
+  display: inline-block;
+  margin-left: 0.3rem;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.table tbody tr.row-overdue {
+  background: rgba(253, 226, 226, 0.4);
+}
+
+.table tfoot td {
+  background: #f1f5f9;
+  font-weight: 700;
+  border-top: 2px solid var(--line);
+}
+
+.method-chip {
+  display: inline-block;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.receipt-link {
+  color: #94a3b8;
+  cursor: not-allowed;
+  font-size: 1.05rem;
+}
+
+.salary-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e2e8f0;
+  margin-top: 0.3rem;
+  min-width: 80px;
+}
+
+.salary-bar-net {
+  background: #2d6b46;
+}
+
+.salary-bar-charges {
+  background: #f59e0b;
+}
+
+.salary-bar-cell {
+  min-width: 120px;
+}
+
+.kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-soft, #eef2ff);
+  color: var(--accent-deep, #3730a3);
+  margin-bottom: 0.5rem;
+}
+
+.kpi-icon.up { background: #fde2e2; color: #a31515; }
+.kpi-icon.down { background: #dcefdc; color: #2d6b46; }
+.kpi-icon.users { background: #ffedd5; color: #9a3412; }
+.kpi-icon.trend { background: #dbeafe; color: #1d4ed8; }
+
+.kpi-trend {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.kpi-trend.up { color: #2d6b46; }
+.kpi-trend.down { color: #a31515; }
+.kpi-trend.neutral { color: var(--muted); }
+
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.category-pill strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.subsection-title {
+  margin: 1.4rem 0 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timeline-amount {
+  font-weight: 700;
+}
+
+.timeline-amount.in { color: #2d6b46; }
+.timeline-amount.out { color: #a31515; }
+.timeline-amount.payroll { color: #b45309; }
+
+.timeline-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+  font-size: 0.85rem;
+}
+
+.timeline-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+}
+
+.timeline-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.timeline-legend-dot.in { background: #2d6b46; }
+.timeline-legend-dot.out { background: #a31515; }
+.timeline-legend-dot.payroll { background: #b45309; }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.margin-positive {
+  color: #2d6b46;
+  font-weight: 700;
+}
+
+.margin-negative {
+  color: #a31515;
+  font-weight: 700;
+}
+
+.tva-grid {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.tva-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.tva-row.tva-net {
+  background: var(--accent-soft, #eef2ff);
+  font-weight: 700;
+}
+
+.tva-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.tva-label small {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+.cashflow-chart-wrap {
+  width: 100%;
+  overflow-x: auto;
 }
 
 .request-layout {
