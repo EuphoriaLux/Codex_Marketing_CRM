@@ -10,11 +10,23 @@ import {
   useState,
 } from "react";
 import { fetchHubData, HubDataSource } from "@/lib/api/hub";
-import { locations as mockLocations } from "@/lib/mock-data";
+import {
+  eventProfitability as mockEventProfitability,
+  locations as mockLocations,
+  payroll as mockPayroll,
+  paymentsIn as mockPaymentsIn,
+  paymentsOut as mockPaymentsOut,
+  refunds as mockRefunds,
+} from "@/lib/mock-data";
 import {
   CustomerSnapshot,
+  EventProfitability,
   LocationItem,
   Metric,
+  PaymentInItem,
+  PaymentOutItem,
+  PayrollItem,
+  RefundItem,
   RequestItem,
   ResourceItem,
   TimelineEvent,
@@ -26,6 +38,11 @@ type HubState = {
   resources: ResourceItem[];
   timeline: TimelineEvent[];
   locations: LocationItem[];
+  paymentsIn: PaymentInItem[];
+  paymentsOut: PaymentOutItem[];
+  payroll: PayrollItem[];
+  refunds: RefundItem[];
+  eventProfitability: EventProfitability[];
   metrics: Metric[];
   source: HubDataSource;
   loading: boolean;
@@ -98,6 +115,11 @@ export function HubProvider({ children }: { children: ReactNode }) {
         resources,
         timeline,
         locations: mockLocations,
+        paymentsIn: mockPaymentsIn,
+        paymentsOut: mockPaymentsOut,
+        payroll: mockPayroll,
+        refunds: mockRefunds,
+        eventProfitability: mockEventProfitability,
         metrics: deriveMetrics(requests, resources),
         source,
         loading,
