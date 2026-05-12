@@ -391,6 +391,26 @@ textarea {
   color: #2d6b46;
 }
 
+.pill.paid {
+  background: #dcefdc;
+  color: #2d6b46;
+}
+
+.pill.pending {
+  background: #ffe8b8;
+  color: #8f6200;
+}
+
+.pill.overdue {
+  background: #fde2e2;
+  color: #a31515;
+}
+
+.pill.scheduled {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
 .timeline-item {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);

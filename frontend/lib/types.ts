@@ -83,3 +83,35 @@ export type LocationItem = {
   notes: string;
   tags: string[];
 };
+
+export type PaymentStatus = "Paid" | "Pending" | "Overdue" | "Scheduled";
+
+export type PaymentInItem = {
+  id: string;
+  date: string;
+  amount: number;
+  source: string;
+  clientName?: string;
+  status: PaymentStatus;
+  reference?: string;
+};
+
+export type PaymentOutItem = {
+  id: string;
+  date: string;
+  amount: number;
+  locationId?: string;
+  payee: string;
+  description: string;
+  status: PaymentStatus;
+};
+
+export type PayrollItem = {
+  id: string;
+  date: string;
+  amount: number;
+  employeeName: string;
+  category: "Salary" | "Expense" | "Bonus";
+  description: string;
+  status: PaymentStatus;
+};
