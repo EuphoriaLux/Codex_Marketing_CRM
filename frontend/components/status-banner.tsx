@@ -3,7 +3,7 @@
 import { useHubData } from "@/lib/hub-provider";
 
 export function StatusBanner() {
-  const { source, error, loading } = useHubData();
+  const { authenticated, error, loading } = useHubData();
 
   if (loading) {
     return <div className="status-banner">Loading portal data...</div>;
@@ -13,11 +13,10 @@ export function StatusBanner() {
     return <div className="status-banner warning">{error}</div>;
   }
 
-  if (source === "mock") {
+  if (!authenticated) {
     return (
       <div className="status-banner">
-        Running in SPA fallback mode. Connect Django later by implementing the
-        `/hub/*` endpoints on your API host.
+        Sign in to load your portal data from the backend API.
       </div>
     );
   }
