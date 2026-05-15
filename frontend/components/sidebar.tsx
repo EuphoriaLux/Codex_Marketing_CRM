@@ -10,6 +10,7 @@ const navItems = [
   { href: "/resources", label: "Resources" },
   { href: "/locations", label: "Locations" },
   { href: "/accounting", label: "Accounting" },
+  { href: "/whatsapp", label: "WhatsApp" },
   { href: "/partnership-admin", label: "Partnership" },
   { href: "/calculator", label: "Events Calculator" },
   { href: "/settings", label: "Settings" },
