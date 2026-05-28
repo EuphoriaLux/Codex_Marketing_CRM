@@ -830,6 +830,32 @@
 }
 .linkMore:hover { text-decoration: underline; }
 
+.holdVersion {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  text-decoration: none;
+  transition: all 150ms;
+  cursor: pointer;
+}
+.holdVersion:hover {
+  border-color: var(--indigo);
+  background: rgba(99, 102, 241, 0.12);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 900px) {
   .preLogin {
     grid-template-columns: 1fr;
