@@ -37,10 +37,19 @@ function isAuthOpen(pathname: string | null): boolean {
   return AUTH_OPEN_ROUTES.has(normalized);
 }
 
-function Shell({ children }: { children: ReactNode }) {
+// Routes that keep the original light shell (everything else gets the dark theme).
+const LIGHT_SHELL_ROUTES = new Set(["/legacy", "/login"]);
+
+function shouldUseDarkShell(pathname: string | null): boolean {
+  if (!pathname) return true;
+  const normalized = pathname.replace(/\/+$/, "") || "/";
+  return !LIGHT_SHELL_ROUTES.has(normalized);
+}
+
+function Shell({ children, dark }: { children: ReactNode; dark: boolean }) {
   return (
     <HubProvider>
-      <div className="shell">
+      <div className={`shell${dark ? " theme-dark" : ""}`}>
         <Sidebar />
         <div className="content">
           <Topbar />
@@ -68,11 +77,13 @@ export function AppFrame({ children }: { children: ReactNode }) {
     if (!getAccessToken()) router.replace("/login");
   }, [mounted, publicFrame, fullScreen, authOpen, pathname, router]);
 
+  const dark = shouldUseDarkShell(pathname);
+
   if (publicFrame) return <PublicFrame>{children}</PublicFrame>;
   if (fullScreen) return <>{children}</>;
-  if (authOpen) return <Shell>{children}</Shell>;
+  if (authOpen) return <Shell dark={dark}>{children}</Shell>;
   if (!mounted) return null;
   if (!getAccessToken()) return null;
 
-  return <Shell>{children}</Shell>;
+  return <Shell dark={dark}>{children}</Shell>;
 }
