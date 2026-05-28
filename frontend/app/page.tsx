@@ -433,6 +433,10 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        <Link href="/legacy" className={styles.holdVersion}>
+          🕰 Version d&apos;origine
+        </Link>
       </div>
     </div>
   );

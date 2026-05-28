@@ -16,7 +16,7 @@ const PUBLIC_FRAME_ROUTES = ["/partnership"];
 const FULL_SCREEN_ROUTES = new Set(["/"]);
 
 // Routes that render in the standard Shell but don't require a logged-in user.
-const AUTH_OPEN_ROUTES = new Set(["/login", "/auth/callback"]);
+const AUTH_OPEN_ROUTES = new Set(["/login", "/auth/callback", "/legacy"]);
 
 function isPublicFrameRoute(pathname: string | null): boolean {
   if (!pathname) return false;
