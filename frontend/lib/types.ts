@@ -157,3 +157,44 @@ export type EventProfitability = {
   otherCosts: number;
   refunds: number;
 };
+
+export type WhatsAppTemplateComponent = {
+  type: "HEADER" | "BODY" | "FOOTER" | "BUTTONS";
+  format?: "TEXT" | "IMAGE" | "DOCUMENT" | "VIDEO";
+  text?: string;
+  example?: { body_text?: string[][]; header_text?: string[] };
+};
+
+export type WhatsAppTemplate = {
+  name: string;
+  language: string;
+  category: string;
+  status: string;
+  components: WhatsAppTemplateComponent[];
+};
+
+export type WhatsAppMessageStatus =
+  | "queued"
+  | "sent"
+  | "delivered"
+  | "read"
+  | "failed";
+
+export type WhatsAppStatusEvent = {
+  status: WhatsAppMessageStatus;
+  timestamp: string;
+  error_code?: number;
+  error_message?: string;
+};
+
+export type WhatsAppMessage = {
+  id: string;
+  wa_message_id: string | null;
+  recipient: string;
+  template_name: string;
+  language: string;
+  parameters: Record<string, string>;
+  status: WhatsAppMessageStatus;
+  status_history: WhatsAppStatusEvent[];
+  created_at: string;
+};

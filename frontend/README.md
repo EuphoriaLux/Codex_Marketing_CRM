@@ -29,5 +29,4 @@ npm run dev
 
 - `app/`: Next.js routes
 - `components/`: reusable UI sections
-- `lib/mock-data.ts`: temporary frontend data source
-- `lib/api/`: fetch wrapper and future backend contracts
+- `lib/api/`: fetch wrapper and backend contracts (no mock fallback — pages render empty until the Django API is reachable and the user is signed in)

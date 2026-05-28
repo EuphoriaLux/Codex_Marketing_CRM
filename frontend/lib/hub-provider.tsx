@@ -9,15 +9,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { fetchHubData, HubDataSource } from "@/lib/api/hub";
-import {
-  eventProfitability as mockEventProfitability,
-  locations as mockLocations,
-  payroll as mockPayroll,
-  paymentsIn as mockPaymentsIn,
-  paymentsOut as mockPaymentsOut,
-  refunds as mockRefunds,
-} from "@/lib/mock-data";
+import { fetchHubData } from "@/lib/api/hub";
 import {
   CustomerSnapshot,
   EventProfitability,
@@ -44,7 +36,7 @@ type HubState = {
   refunds: RefundItem[];
   eventProfitability: EventProfitability[];
   metrics: Metric[];
-  source: HubDataSource;
+  authenticated: boolean;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -79,7 +71,7 @@ export function HubProvider({ children }: { children: ReactNode }) {
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
-  const [source, setSource] = useState<HubDataSource>("mock");
+  const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,14 +82,23 @@ export function HubProvider({ children }: { children: ReactNode }) {
       const data = await fetchHubData();
 
       startTransition(() => {
-        setCustomer(data.customer);
-        setRequests(data.requests);
-        setResources(data.resources);
-        setTimeline(data.timeline);
-        setSource(data.source);
+        if (data) {
+          setCustomer(data.customer);
+          setRequests(data.requests);
+          setResources(data.resources);
+          setTimeline(data.timeline);
+          setAuthenticated(true);
+        } else {
+          setCustomer(emptyCustomer);
+          setRequests([]);
+          setResources([]);
+          setTimeline([]);
+          setAuthenticated(false);
+        }
       });
     } catch {
       setError("Unable to load hub data.");
+      setAuthenticated(false);
     } finally {
       setLoading(false);
     }
@@ -114,14 +115,14 @@ export function HubProvider({ children }: { children: ReactNode }) {
         requests,
         resources,
         timeline,
-        locations: mockLocations,
-        paymentsIn: mockPaymentsIn,
-        paymentsOut: mockPaymentsOut,
-        payroll: mockPayroll,
-        refunds: mockRefunds,
-        eventProfitability: mockEventProfitability,
+        locations: [],
+        paymentsIn: [],
+        paymentsOut: [],
+        payroll: [],
+        refunds: [],
+        eventProfitability: [],
         metrics: deriveMetrics(requests, resources),
-        source,
+        authenticated,
         loading,
         error,
         refresh: loadData,
