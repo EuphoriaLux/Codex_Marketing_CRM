@@ -12,14 +12,23 @@ import { HubProvider } from "@/lib/hub-provider";
 // Routes rendered with the marketing/public chrome (no sidebar, no auth required).
 const PUBLIC_FRAME_ROUTES = ["/partnership"];
 
+// Routes that render full-screen (no shell, no public chrome, no auth required).
+const FULL_SCREEN_ROUTES = new Set(["/"]);
+
 // Routes that render in the standard Shell but don't require a logged-in user.
-const AUTH_OPEN_ROUTES = new Set(["/", "/login", "/auth/callback"]);
+const AUTH_OPEN_ROUTES = new Set(["/login", "/auth/callback"]);
 
 function isPublicFrameRoute(pathname: string | null): boolean {
   if (!pathname) return false;
   return PUBLIC_FRAME_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
+}
+
+function isFullScreen(pathname: string | null): boolean {
+  if (!pathname) return false;
+  const normalized = pathname.replace(/\/+$/, "") || "/";
+  return FULL_SCREEN_ROUTES.has(normalized);
 }
 
 function isAuthOpen(pathname: string | null): boolean {
@@ -46,6 +55,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const publicFrame = isPublicFrameRoute(pathname);
+  const fullScreen = isFullScreen(pathname);
   const authOpen = isAuthOpen(pathname);
   const [mounted, setMounted] = useState(false);
 
@@ -54,11 +64,12 @@ export function AppFrame({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!mounted || publicFrame || authOpen) return;
+    if (!mounted || publicFrame || fullScreen || authOpen) return;
     if (!getAccessToken()) router.replace("/login");
-  }, [mounted, publicFrame, authOpen, pathname, router]);
+  }, [mounted, publicFrame, fullScreen, authOpen, pathname, router]);
 
   if (publicFrame) return <PublicFrame>{children}</PublicFrame>;
+  if (fullScreen) return <>{children}</>;
   if (authOpen) return <Shell>{children}</Shell>;
   if (!mounted) return null;
   if (!getAccessToken()) return null;
