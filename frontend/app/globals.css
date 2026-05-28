@@ -85,23 +85,6 @@ textarea {
   color: var(--muted);
 }
 
-.source-badge {
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.source-badge.mock {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.source-badge.api {
-  background: #dcefdc;
-  color: #2d6b46;
-}
-
 .status-banner {
   padding: 0.9rem 1rem;
   border: 1px solid rgba(37, 99, 235, 0.18);

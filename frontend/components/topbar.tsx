@@ -3,7 +3,7 @@
 import { useHubData } from "@/lib/hub-provider";
 
 export function Topbar() {
-  const { customer, source, loading, refresh } = useHubData();
+  const { customer, authenticated, loading, refresh } = useHubData();
 
   return (
     <header className="topbar">
@@ -12,11 +12,10 @@ export function Topbar() {
         <strong>{loading ? "Loading customer context" : "Client-side app shell"}</strong>
       </div>
       <div className="topbar-actions">
-        <span className={`source-badge ${source}`}>
-          {source === "api" ? "Django API" : "Mock data"}
-        </span>
         <span className="topbar-contact">
-          {customer.primaryContact || "No contact loaded"}
+          {authenticated
+            ? customer.primaryContact || "No contact loaded"
+            : "Not signed in"}
         </span>
         <button type="button" className="button secondary" onClick={() => void refresh()}>
           Refresh

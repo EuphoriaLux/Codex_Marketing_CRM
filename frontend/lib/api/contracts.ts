@@ -1,4 +1,10 @@
-import { CustomerSnapshot, RequestItem, ResourceItem } from "@/lib/types";
+import {
+  CustomerSnapshot,
+  RequestItem,
+  ResourceItem,
+  WhatsAppMessage,
+  WhatsAppTemplate,
+} from "@/lib/types";
 
 export type MeResponse = {
   customer: CustomerSnapshot;
@@ -20,3 +26,7 @@ export type TimelineResponse = {
     description: string;
   }[];
 };
+
+export type WhatsAppTemplatesResponse = { items: WhatsAppTemplate[] };
+export type WhatsAppMessagesResponse = { items: WhatsAppMessage[] };
+export type WhatsAppSendResponse = { message: WhatsAppMessage };
