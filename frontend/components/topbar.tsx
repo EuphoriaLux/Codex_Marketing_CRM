@@ -15,7 +15,7 @@ type RoleProfile = {
 
 const ROLE_PROFILES: Record<RoleKey, RoleProfile> = {
   founder:    { name: "Sébastien", role: "Fondateur",    avatar: "S" },
-  cofounder:  { name: "Romain",    role: "Co-fondateur", avatar: "R" },
+  cofounder:  { name: "Wesley",    role: "Co-fondateur", avatar: "W" },
   accountant: { name: "Claire",    role: "Comptable",    avatar: "C" },
   employee:   { name: "Julien",    role: "Employé",      avatar: "J" },
 };
