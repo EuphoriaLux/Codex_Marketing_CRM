@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crush Hub — Dark Bento (toutes les pages)</title>
+<style>
+  :root {
+    --bg: #0a0b1e;
+    --surface: #131527;
+    --surface-2: #1a1d35;
+    --glass: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --indigo: #6366f1;
+    --indigo-2: #818cf8;
+    --magenta: #ec4899;
+    --cyan: #06b6d4;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --text: #f5f5f7;
+    --muted: #9ca3af;
+    --muted-2: #6b7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    min-height: 100vh;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(700px circle at 10% 5%, rgba(99,102,241,0.18), transparent 50%),
+      radial-gradient(600px circle at 90% 80%, rgba(236,72,153,0.14), transparent 45%);
+    pointer-events: none;
+  }
+  a { text-decoration: none; color: inherit; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+
+  /* Shell */
+  .shell {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 1.4rem 1.1rem;
+    border-right: 1px solid var(--border);
+    background: rgba(13, 14, 30, 0.7);
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.3rem 0.4rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--indigo), var(--magenta));
+    display: grid; place-items: center;
+    color: white; font-weight: 800;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+  }
+  .brand-copy h1 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-copy span { font-size: 0.72rem; color: var(--muted); }
+
+  .nav-list { display: grid; gap: 0.25rem; flex: 1; }
+  .nav-section {
+    padding: 0.7rem 0.6rem 0.3rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted-2);
+    font-weight: 700;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 150ms;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+  .nav-link:hover { color: var(--text); background: var(--glass); }
+  .nav-link.active {
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(236,72,153,0.12));
+    border-color: rgba(99,102,241,0.3);
+  }
+  .nav-link .ico { font-size: 1.05rem; }
+  .nav-link.locked { opacity: 0.35; cursor: not-allowed; }
+  .nav-link.locked:hover { background: transparent; color: var(--muted); }
+  .nav-foot {
+    padding: 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--glass);
+  }
+  .nav-foot strong { font-size: 0.85rem; }
+  .nav-foot p { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; line-height: 1.4; }
+
+  /* Content */
+  .content { padding: 1.4rem 1.8rem; max-width: 1400px; }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.4rem;
+    padding: 0.8rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .search {
+    flex: 1;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.85rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  .topbar-right { display: flex; gap: 0.6rem; align-items: center; }
+  .icon-btn {
+    position: relative;
+    width: 36px; height: 36px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--muted);
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--border-strong); }
+  .icon-badge { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--magenta); }
+  .user-chip {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    position: relative;
+  }
+  .user-chip:hover { border-color: var(--border-strong); }
+  .user-chip .chev { color: var(--muted); font-size: 0.7rem; margin-left: 0.2rem; }
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--indigo), var(--magenta));
+    color: white; font-weight: 700; font-size: 0.8rem;
+    display: grid; place-items: center;
+  }
+  .user-chip .name { font-size: 0.85rem; font-weight: 600; }
+  .user-chip .role-tag { font-size: 0.7rem; color: var(--muted); }
+
+  /* Dropdown menu (anchored to user chip) */
+  .user-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 260px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 0.4rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: all 150ms;
+    z-index: 60;
+  }
+  .user-chip.open .user-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .menu-item {
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: transparent;
+    border: 0;
+    width: 100%;
+    text-align: left;
+  }
+  .menu-item:hover { background: var(--glass); }
+  .menu-section {
+    padding: 0.55rem 0.8rem 0.35rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted-2);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .menu-section .dev-chip {
+    padding: 0.1rem 0.5rem;
+    background: rgba(244,63,94,0.18);
+    color: #fda4af;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+  }
+  .menu-divider { height: 1px; background: var(--border); margin: 0.3rem 0; }
+  .role-radio {
+    width: 14px; height: 14px;
+    border: 2px solid var(--muted-2);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+  }
+  .menu-item.active { color: var(--indigo-2); }
+  .menu-item.active .role-radio { border-color: var(--indigo); }
+  .menu-item.active .role-radio::after {
+    content: ""; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--indigo);
+  }
+
+  /* Generic card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.2rem;
+    transition: all 200ms;
+  }
+  .card:hover { border-color: var(--border-strong); }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    gap: 0.5rem;
+  }
+  .card-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+  .card-sub { color: var(--muted); font-size: 0.85rem; }
+  .link-more { color: var(--indigo-2); font-size: 0.85rem; font-weight: 600; }
+  .link-more:hover { text-decoration: underline; }
+
+  /* Page header */
+  .page-header { margin-bottom: 1.4rem; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.8rem;
+  }
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .page-header h1 .accent {
+    background: linear-gradient(135deg, var(--indigo-2), var(--magenta));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .page-header p { margin-top: 0.6rem; color: var(--muted); max-width: 60ch; line-height: 1.6; }
+
+  /* Grids */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .stack { display: grid; gap: 0.8rem; }
+  .gap-tight { gap: 0.5rem; }
+
+  /* Metric card */
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card .label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .metric-card .num {
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-top: 0.3rem;
+    background: linear-gradient(135deg, var(--text), var(--muted));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .trend { display: inline-flex; gap: 0.25rem; font-size: 0.8rem; font-weight: 700; margin-top: 0.3rem; }
+  .trend.up { color: var(--emerald); }
+  .trend.down { color: var(--rose); }
+  .trend.neutral { color: var(--muted); }
+
+  /* Pills */
+  .pill {
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    display: inline-block;
+  }
+  .pill-high { background: rgba(244,63,94,0.18); color: #fda4af; }
+  .pill-medium { background: rgba(245,158,11,0.18); color: #fcd34d; }
+  .pill-low { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+  .pill-open { background: rgba(99,102,241,0.18); color: var(--indigo-2); }
+  .pill-review { background: rgba(6,182,212,0.18); color: #67e8f9; }
+  .pill-waiting { background: rgba(245,158,11,0.18); color: #fcd34d; }
+  .pill-closed { background: rgba(255,255,255,0.06); color: var(--muted); }
+  .pill-paid { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+  .pill-pending { background: rgba(245,158,11,0.18); color: #fcd34d; }
+  .pill-overdue { background: rgba(244,63,94,0.18); color: #fda4af; }
+  .pill-scheduled { background: rgba(99,102,241,0.18); color: var(--indigo-2); }
+
+  /* Stage pills (Locations) */
+  .stage-active { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+  .stage-negotiating { background: rgba(245,158,11,0.18); color: #fcd34d; }
+  .stage-prospect { background: rgba(99,102,241,0.18); color: var(--indigo-2); }
+  .stage-paused { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .stage-archived { background: rgba(255,255,255,0.05); color: var(--muted-2); }
+
+  /* Item list */
+  .item-row {
+    display: grid;
+    gap: 0.4rem;
+    padding: 0.9rem 1rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .item-row:hover { border-color: var(--indigo); }
+  .item-row-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;
+  }
+  .item-row-head strong { font-size: 0.95rem; }
+  .item-row p { font-size: 0.86rem; color: var(--muted); line-height: 1.5; }
+  .item-row small { color: var(--muted-2); font-size: 0.78rem; }
+
+  /* Forms */
+  .form-field { display: grid; gap: 0.35rem; margin-bottom: 0.9rem; }
+  .form-field label { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+  }
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    outline: none;
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+  }
+  .form-field textarea { min-height: 110px; resize: vertical; }
+  .btn-primary {
+    padding: 0.8rem 1.2rem;
+    background: linear-gradient(135deg, var(--indigo), #4f46e5);
+    color: white;
+    font-weight: 700;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(99,102,241,0.35); }
+  .btn-secondary {
+    padding: 0.7rem 1.1rem;
+    background: var(--glass);
+    color: var(--text);
+    font-weight: 600;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { border-color: var(--indigo); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  thead th {
+    text-align: left;
+    padding: 0.7rem 0.5rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 0.85rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:hover { background: var(--glass); }
+  tfoot td {
+    padding: 0.85rem 0.5rem;
+    font-weight: 700;
+    border-top: 2px solid var(--border-strong);
+    background: var(--glass);
+  }
+
+  /* Resource cards */
+  .res-card { display: grid; gap: 0.6rem; }
+  .res-type {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--indigo-2);
+    font-weight: 700;
+  }
+
+  /* Location row */
+  .loc-row {
+    display: grid;
+    grid-template-columns: 1.6fr auto 0.8fr 0.9fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .loc-row:hover { border-color: var(--indigo); }
+  .loc-row strong { font-size: 0.95rem; }
+  .loc-row .city { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; display: block; }
+  .loc-meta { font-size: 0.82rem; color: var(--muted); text-align: right; }
+
+  /* Planning grid (employee view) */
+  .planning-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+  .day-col {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 0.5rem;
+    min-height: 130px;
+  }
+  .day-col .dlabel {
+    text-align: center;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .day-col.today .dlabel { color: var(--indigo-2); }
+  .shift {
+    padding: 0.4rem 0.55rem;
+    background: rgba(99,102,241,0.18);
+    border: 1px solid rgba(99,102,241,0.4);
+    border-radius: 8px;
+    font-size: 0.74rem;
+    margin-top: 0.35rem;
+  }
+  .shift.free {
+    background: rgba(16,185,129,0.15);
+    border-color: rgba(16,185,129,0.35);
+  }
+  .shift.off {
+    background: rgba(255,255,255,0.04);
+    border-color: var(--border);
+    color: var(--muted);
+  }
+  .shift strong { display: block; font-size: 0.78rem; color: var(--text); }
+  .shift span { color: var(--muted); font-size: 0.7rem; }
+
+  /* Team grid */
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.9rem; }
+  .team-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; text-align: center; }
+  .team-card .avatar-lg {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 0.6rem;
+    background: linear-gradient(135deg, var(--indigo), var(--magenta));
+    display: grid; place-items: center;
+    color: white; font-weight: 700; font-size: 1.4rem;
+  }
+  .team-card strong { font-size: 0.95rem; }
+  .team-card .role { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .team-card .stat-row { display: flex; justify-content: space-around; margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px solid var(--border); }
+  .team-card .stat-row div { display: grid; gap: 0.1rem; }
+  .team-card .stat-row strong { font-size: 0.95rem; color: var(--text); }
+  .team-card .stat-row span { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Sparkline */
+  .spark { width: 100%; height: 50px; margin-top: 0.5rem; }
+
+  /* Hold-version pill */
+  .hold-version {
+    position: fixed;
+    bottom: 1.4rem; right: 1.4rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    padding: 0.65rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    z-index: 50;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+  }
+  .hold-version:hover { border-color: var(--indigo); background: rgba(99,102,241,0.1); }
+
+
+  /* Empty state */
+  .empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  /* Page view toggle */
+  .page-view { display: none; }
+  .page-view.active { display: block; }
+
+  /* Calendar chip */
+  .calendar-chip {
+    display: inline-grid;
+    gap: 0.1rem;
+    place-items: center;
+    padding: 0.4rem 0.55rem;
+    background: rgba(99,102,241,0.15);
+    border-radius: 8px;
+    min-width: 50px;
+  }
+  .calendar-chip .d { font-size: 1.1rem; font-weight: 800; color: var(--indigo-2); }
+  .calendar-chip .m { font-size: 0.66rem; color: var(--muted); text-transform: uppercase; }
+
+  /* Activity */
+  .activity-list { display: grid; gap: 0.5rem; }
+  .activity-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.65rem 0.4rem;
+    font-size: 0.86rem;
+  }
+  .act-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--indigo); }
+  .act-dot.green { background: var(--emerald); }
+  .act-dot.amber { background: var(--amber); }
+  .act-dot.rose { background: var(--rose); }
+
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .planning-week { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">◆</div>
+      <div class="brand-copy">
+        <h1>Crush Hub</h1>
+        <span>Espace équipe</span>
+      </div>
+    </div>
+
+    <div class="nav-list">
+      <div class="nav-section">Pilotage</div>
+      <a class="nav-link" data-page="dashboard"><span class="ico">📊</span> Tableau de bord</a>
+      <a class="nav-link active" data-page="planning"><span class="ico">🗓️</span> Planning</a>
+      <a class="nav-link" data-page="team"><span class="ico">👥</span> Équipe</a>
+      <a class="nav-link" data-page="requests"><span class="ico">📋</span> Demandes</a>
+
+      <div class="nav-section">Opérations</div>
+      <a class="nav-link" data-page="locations"><span class="ico">📍</span> Lieux</a>
+      <a class="nav-link" data-page="resources"><span class="ico">📁</span> Ressources</a>
+      <a class="nav-link" data-page="calculator"><span class="ico">🎟️</span> Calculator</a>
+
+      <div class="nav-section">Finances</div>
+      <a class="nav-link" data-page="accounting"><span class="ico">💰</span> Comptabilité</a>
+      <a class="nav-link" data-page="payroll"><span class="ico">💼</span> Salaires</a>
+
+      <div class="nav-section">Compte</div>
+      <a class="nav-link" data-page="settings"><span class="ico">⚙️</span> Paramètres</a>
+    </div>
+
+    <div class="nav-foot">
+      <strong>🔒 Session sécurisée</strong>
+      <p>Identifiez-vous via Crush.lo pour synchroniser vos données.</p>
+    </div>
+  </aside>
+
+  <!-- ========== CONTENT ========== -->
+  <main class="content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="search">
+        <span>🔍</span>
+        <span>Rechercher…</span>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn">🔔<span class="icon-badge"></span></button>
+        <div class="user-chip" id="userChip">
+          <div class="avatar">S</div>
+          <div>
+            <div class="name">Sébastien</div>
+            <div class="role-tag">Fondateur</div>
+          </div>
+          <span class="chev">▾</span>
+
+          <div class="user-menu" onclick="event.stopPropagation()">
+            <button type="button" class="menu-item"><span>👤</span> Profil</button>
+            <button type="button" class="menu-item"><span>⚙</span> Paramètres</button>
+
+            <div class="menu-divider"></div>
+            <div class="menu-section">
+              🧪 Voir comme
+              <span class="dev-chip">DEV</span>
+            </div>
+            <button type="button" class="menu-item active" data-role="founder">
+              <span class="role-radio"></span> Fondateur
+            </button>
+            <button type="button" class="menu-item" data-role="cofounder">
+              <span class="role-radio"></span> Co-fondateur
+            </button>
+            <button type="button" class="menu-item" data-role="accountant">
+              <span class="role-radio"></span> Comptable
+            </button>
+            <button type="button" class="menu-item" data-role="employee">
+              <span class="role-radio"></span> Employé
+            </button>
+
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item"><span>🚪</span> Se déconnecter</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DASHBOARD ============ -->
+    <section class="page-view" data-view="dashboard">
+      <div class="page-header">
+        <span class="eyebrow">● Tableau de bord</span>
+        <h1>Vue d'ensemble <span class="accent">de l'équipe.</span></h1>
+        <p>Le pouls de Crush.lu : événements à venir, requests, finances et activité de l'équipe en un coup d'œil.</p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 1.2rem;">
+        <div class="metric-card">
+          <div class="label">Demandes actives</div>
+          <div class="num">12</div>
+          <div class="trend up">▲ +3 cette semaine</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Événements ce mois</div>
+          <div class="num">8</div>
+          <div class="trend up">▲ +2 vs mois dernier</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">CA réalisé</div>
+          <div class="num">€12 480</div>
+          <div class="trend up">▲ +18%</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">En attente</div>
+          <div class="num">€2 340</div>
+          <div class="trend neutral">3 factures</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Dernières demandes</div>
+              <div class="card-sub">Les conversations actives sur les comptes.</div>
+            </div>
+            <a class="link-more" data-go="requests">Toutes →</a>
+          </div>
+          <div class="stack">
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>Catering update pour Wine tasting 30/05</strong>
+                <span class="pill pill-high">Haute</span>
+              </div>
+              <p>Le partenaire La Cave veut ajuster le menu végétarien.</p>
+              <small>Status: En review · #REQ-042</small>
+            </div>
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>Confirmer venue Speed Dating 07/06</strong>
+                <span class="pill pill-high">Haute</span>
+              </div>
+              <p>Le Loft demande un dépôt avant blocage de la salle.</p>
+              <small>Status: Open · #REQ-039</small>
+            </div>
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>Nouveau plan marketing juin</strong>
+                <span class="pill pill-medium">Moyenne</span>
+              </div>
+              <p>Validation des visuels Instagram pour la nouvelle campagne.</p>
+              <small>Status: Waiting · #REQ-037</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Activité de l'équipe</div>
+              <div class="card-sub">Ce qui s'est passé aujourd'hui.</div>
+            </div>
+          </div>
+          <div class="activity-list">
+            <div class="activity-row">
+              <span class="act-dot"></span>
+              <span><strong>Julien</strong> s'est positionné sur Wine tasting (30/05)</span>
+              <span style="color:var(--muted-2); font-size:0.74rem;">il y a 12m</span>
+            </div>
+            <div class="activity-row">
+              <span class="act-dot green"></span>
+              <span>Facture payée — <strong>ACME · €1 240</strong></span>
+              <span style="color:var(--muted-2); font-size:0.74rem;">il y a 1h</span>
+            </div>
+            <div class="activity-row">
+              <span class="act-dot amber"></span>
+              <span><strong>Marie</strong> a soumis sa disponibilité juin</span>
+              <span style="color:var(--muted-2); font-size:0.74rem;">il y a 3h</span>
+            </div>
+            <div class="activity-row">
+              <span class="act-dot rose"></span>
+              <span>Salaires Mai validés par le comptable</span>
+              <span style="color:var(--muted-2); font-size:0.74rem;">hier</span>
+            </div>
+            <div class="activity-row">
+              <span class="act-dot green"></span>
+              <span>Nouveau partenaire approuvé — <strong>Chez Marie</strong></span>
+              <span style="color:var(--muted-2); font-size:0.74rem;">hier</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PLANNING ============ -->
+    <section class="page-view active" data-view="planning">
+      <div class="page-header">
+        <span class="eyebrow">🗓️ Planning équipe</span>
+        <h1>Planning <span class="accent">de la semaine.</span></h1>
+        <p>Visualise et configure les disponibilités de chaque membre, et attribue les événements à venir.</p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 1.2rem;">
+        <div class="metric-card">
+          <div class="label">Shifts cette semaine</div>
+          <div class="num">14</div>
+          <div class="trend neutral">5 membres mobilisés</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Heures totales</div>
+          <div class="num">62h</div>
+          <div class="trend up">▲ +8h vs semaine -1</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Non couverts</div>
+          <div class="num">2</div>
+          <div class="trend down">Wine tasting 30/05</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Demandes congé</div>
+          <div class="num">3</div>
+          <div class="trend neutral">En attente</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Semaine du 26 mai au 1er juin</div>
+            <div class="card-sub">Glissez-déposez les shifts pour réorganiser.</div>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn-secondary">◀ Semaine -1</button>
+            <button class="btn-secondary">Semaine +1 ▶</button>
+            <button class="btn-primary">+ Ajouter shift</button>
+          </div>
+        </div>
+        <div class="planning-week">
+          <div class="day-col">
+            <div class="dlabel">Lun 26</div>
+            <div class="shift off"><strong>Off</strong><span>Repos équipe</span></div>
+          </div>
+          <div class="day-col">
+            <div class="dlabel">Mar 27</div>
+            <div class="shift"><strong>Marie</strong><span>14h–18h · Prépa</span></div>
+          </div>
+          <div class="day-col">
+            <div class="dlabel">Mer 28</div>
+            <div class="shift"><strong>Julien</strong><span>10h–17h · Office</span></div>
+            <div class="shift free"><strong>Claire</strong><span>10h–14h · Compta</span></div>
+          </div>
+          <div class="day-col today">
+            <div class="dlabel">Jeu 29 · Aujourd'hui</div>
+            <div class="shift"><strong>Marie</strong><span>14h–22h · Briefing</span></div>
+            <div class="shift"><strong>Julien</strong><span>16h–22h · Logistique</span></div>
+          </div>
+          <div class="day-col">
+            <div class="dlabel">Ven 30</div>
+            <div class="shift" style="background:rgba(244,63,94,0.15); border-color:rgba(244,63,94,0.4)">
+              <strong>🍷 Wine tasting</strong><span>19h–23h · La Cave</span>
+            </div>
+            <div class="shift"><strong>Sébastien · Romain</strong><span>19h–23h</span></div>
+          </div>
+          <div class="day-col">
+            <div class="dlabel">Sam 31</div>
+            <div class="shift off"><strong>—</strong><span>Aucun shift</span></div>
+          </div>
+          <div class="day-col">
+            <div class="dlabel">Dim 1</div>
+            <div class="shift off"><strong>Off</strong><span>Repos équipe</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:1rem;">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Demandes de congés</div>
+          </div>
+          <div class="stack">
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>Julien — du 12 au 16 juin</strong>
+                <span class="pill pill-pending">En attente</span>
+              </div>
+              <p>5 jours · Motif: vacances familiales</p>
+            </div>
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>Marie — 8 juin</strong>
+                <span class="pill pill-pending">En attente</span>
+              </div>
+              <p>1 jour · Motif: rendez-vous médical</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Mes disponibilités juin</div>
+            <div class="card-sub">Coche les créneaux où tu es libre.</div>
+          </div>
+          <p style="color:var(--muted); margin-top:0.4rem; font-size:0.88rem;">
+            🟢 12 jours marqués disponibles<br/>
+            🔴 3 jours indisponibles<br/>
+            ⚪ 15 jours à confirmer
+          </p>
+          <button class="btn-primary" style="margin-top:0.8rem;">Soumettre mes dispos</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ÉQUIPE ============ -->
+    <section class="page-view" data-view="team">
+      <div class="page-header">
+        <span class="eyebrow">👥 Équipe</span>
+        <h1>Membres <span class="accent">de Crush.lu.</span></h1>
+        <p>L'équipe au complet : statuts, postes, dispos et performances.</p>
+      </div>
+
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="avatar-lg">S</div>
+          <strong>Sébastien</strong>
+          <div class="role">Fondateur · CEO</div>
+          <div class="stat-row">
+            <div><strong>14</strong><span>Events</span></div>
+            <div><strong>92%</strong><span>Présence</span></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar-lg" style="background:linear-gradient(135deg, var(--magenta), var(--rose))">R</div>
+          <strong>Romain</strong>
+          <div class="role">Co-fondateur · COO</div>
+          <div class="stat-row">
+            <div><strong>11</strong><span>Events</span></div>
+            <div><strong>88%</strong><span>Présence</span></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar-lg" style="background:linear-gradient(135deg, var(--emerald), var(--cyan))">C</div>
+          <strong>Claire</strong>
+          <div class="role">Comptable</div>
+          <div class="stat-row">
+            <div><strong>—</strong><span>Events</span></div>
+            <div><strong>100%</strong><span>Présence</span></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar-lg" style="background:linear-gradient(135deg, var(--amber), var(--magenta))">M</div>
+          <strong>Marie</strong>
+          <div class="role">Employée · Events</div>
+          <div class="stat-row">
+            <div><strong>9</strong><span>Events</span></div>
+            <div><strong>96%</strong><span>Présence</span></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar-lg" style="background:linear-gradient(135deg, var(--cyan), var(--indigo))">J</div>
+          <strong>Julien</strong>
+          <div class="role">Employé · Logistique</div>
+          <div class="stat-row">
+            <div><strong>12</strong><span>Events</span></div>
+            <div><strong>94%</strong><span>Présence</span></div>
+          </div>
+        </div>
+        <div class="team-card" style="border-style:dashed;">
+          <div class="avatar-lg" style="background:rgba(255,255,255,0.06); color:var(--muted)">+</div>
+          <strong>Inviter un membre</strong>
+          <div class="role">Email · Crush.lu</div>
+          <button class="btn-secondary" style="margin-top:0.7rem; width:100%;">Envoyer invitation</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DEMANDES ============ -->
+    <section class="page-view" data-view="requests">
+      <div class="page-header">
+        <span class="eyebrow">📋 Demandes & support</span>
+        <h1>Demandes <span class="accent">des partenaires.</span></h1>
+        <p>Crée, suis et clôture les demandes provenant des lieux, partenaires et clients.</p>
+      </div>
+
+      <div class="grid-2" style="grid-template-columns: 0.9fr 1.2fr; gap: 1.2rem;">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Nouvelle demande</div>
+              <div class="card-sub">Postée localement, prête à se connecter à l'API.</div>
+            </div>
+          </div>
+          <form>
+            <div class="form-field">
+              <label>Sujet</label>
+              <input type="text" placeholder="Réajustement menu Wine tasting" />
+            </div>
+            <div class="form-field">
+              <label>Catégorie</label>
+              <select>
+                <option>Project</option>
+                <option>Technique</option>
+                <option>Facturation</option>
+                <option>Général</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Priorité</label>
+              <select>
+                <option>Basse</option>
+                <option selected>Moyenne</option>
+                <option>Haute</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Description</label>
+              <textarea placeholder="Détaille le contexte…"></textarea>
+            </div>
+            <button class="btn-primary" type="button">Créer la demande</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Toutes les demandes</div>
+              <div class="card-sub">12 actives · 3 fermées ce mois</div>
+            </div>
+            <button class="btn-secondary">Filtrer ▾</button>
+          </div>
+          <div class="stack">
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>#REQ-042 — Catering update needed</strong>
+                <span class="pill pill-high">Haute</span>
+              </div>
+              <p>Le partenaire La Cave veut ajuster le menu végétarien pour Wine tasting (30/05).</p>
+              <small>En review · 2 jours</small>
+            </div>
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>#REQ-039 — Confirmation venue Speed Dating</strong>
+                <span class="pill pill-high">Haute</span>
+              </div>
+              <p>Le Loft demande un dépôt avant blocage de la salle pour le 07/06.</p>
+              <small>Open · 5 jours</small>
+            </div>
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>#REQ-037 — Plan marketing juin</strong>
+                <span class="pill pill-medium">Moyenne</span>
+              </div>
+              <p>Validation des visuels Instagram pour la nouvelle campagne.</p>
+              <small>Waiting client · 7 jours</small>
+            </div>
+            <div class="item-row">
+              <div class="item-row-head">
+                <strong>#REQ-035 — Maintenance site web</strong>
+                <span class="pill pill-low">Basse</span>
+              </div>
+              <p>Mise à jour du formulaire de réservation suite au feedback utilisateurs.</p>
+              <small>Open · 9 jours</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LIEUX ============ -->
+    <section class="page-view" data-view="locations">
+      <div class="page-header">
+        <span class="eyebrow">📍 Lieux & partenaires</span>
+        <h1>Lieux <span class="accent">partenaires.</span></h1>
+        <p>Tous les venues partenaires, leur stade dans le pipeline et leur disponibilité.</p>
+      </div>
+
+      <div class="grid-3" style="margin-bottom: 1rem;">
+        <div class="metric-card">
+          <div class="label">Partenaires totaux</div>
+          <div class="num">18</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Actifs</div>
+          <div class="num">11</div>
+          <div class="trend up">▲ +2 ce trimestre</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">En pipeline</div>
+          <div class="num">5</div>
+          <div class="trend neutral">3 nego · 2 prospect</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Tous les lieux</div>
+          <button class="btn-primary">+ Nouveau lieu</button>
+        </div>
+        <div class="stack gap-tight">
+          <div class="loc-row">
+            <div>
+              <strong>La Cave</strong>
+              <span class="city">Luxembourg-Ville · 80 pers · Intérieur</span>
+            </div>
+            <span class="pill stage-active">Active</span>
+            <div class="loc-meta">Wine tasting × 12</div>
+            <div class="loc-meta">Marie · gestion</div>
+            <span class="loc-meta">▶</span>
+          </div>
+          <div class="loc-row">
+            <div>
+              <strong>Atelier des Cuisiniers</strong>
+              <span class="city">Esch-sur-Alzette · 24 pers · Cuisine pro</span>
+            </div>
+            <span class="pill stage-active">Active</span>
+            <div class="loc-meta">Cooking × 8</div>
+            <div class="loc-meta">Julien · gestion</div>
+            <span class="loc-meta">▶</span>
+          </div>
+          <div class="loc-row">
+            <div>
+              <strong>Le Loft</strong>
+              <span class="city">Luxembourg-Ville · 60 pers · Rooftop</span>
+            </div>
+            <span class="pill stage-negotiating">Negotiating</span>
+            <div class="loc-meta">Speed dating ×1</div>
+            <div class="loc-meta">Sébastien · contact</div>
+            <span class="loc-meta">▶</span>
+          </div>
+          <div class="loc-row">
+            <div>
+              <strong>Chez Marie</strong>
+              <span class="city">Differdange · 40 pers · Restaurant</span>
+            </div>
+            <span class="pill stage-prospect">Prospect</span>
+            <div class="loc-meta">—</div>
+            <div class="loc-meta">Romain · contact</div>
+            <span class="loc-meta">▶</span>
+          </div>
+          <div class="loc-row">
+            <div>
+              <strong>Studio Sound</strong>
+              <span class="city">Bonnevoie · 100 pers · Salle son</span>
+            </div>
+            <span class="pill stage-paused">Paused</span>
+            <div class="loc-meta">Quiz ×2</div>
+            <div class="loc-meta">—</div>
+            <span class="loc-meta">▶</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RESSOURCES ============ -->
+    <section class="page-view" data-view="resources">
+      <div class="page-header">
+        <span class="eyebrow">📁 Ressources partagées</span>
+        <h1>Ressources <span class="accent">de l'équipe.</span></h1>
+        <p>Guides internes, contrats partenaires, brand assets, factures et documents projet.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="res-card">
+            <span class="res-type">📘 Guide</span>
+            <strong>Procédure briefing événement</strong>
+            <p style="color:var(--muted); font-size:0.88rem;">Le déroulé standard d'un Wine tasting / Speed dating, de la prep à la facturation.</p>
+            <small style="color:var(--muted-2);">Modifié il y a 3 jours</small>
+            <button class="btn-secondary" style="margin-top:0.4rem;">Ouvrir</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="res-card">
+            <span class="res-type">📑 Contrat</span>
+            <strong>Template contrat partenaire</strong>
+            <p style="color:var(--muted); font-size:0.88rem;">Modèle Word personnalisable pour le contrat de venue.</p>
+            <small style="color:var(--muted-2);">Modifié il y a 12 jours</small>
+            <button class="btn-secondary" style="margin-top:0.4rem;">Ouvrir</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="res-card">
+            <span class="res-type">🎨 Asset</span>
+            <strong>Brand kit Crush.lu (Mai 2025)</strong>
+            <p style="color:var(--muted); font-size:0.88rem;">Logos, palettes, polices et templates Instagram.</p>
+            <small style="color:var(--muted-2);">Modifié il y a 18 jours</small>
+            <button class="btn-secondary" style="margin-top:0.4rem;">Ouvrir</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="res-card">
+            <span class="res-type">💸 Facture</span>
+            <strong>Facture ACME — Avril</strong>
+            <p style="color:var(--muted); font-size:0.88rem;">Facturation mensuelle, payée le 12 mai.</p>
+            <small style="color:var(--muted-2);">Modifié il y a 21 jours</small>
+            <button class="btn-secondary" style="margin-top:0.4rem;">Ouvrir</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="res-card">
+            <span class="res-type">📊 Rapport</span>
+            <strong>Rapport trimestriel Q1 2025</strong>
+            <p style="color:var(--muted); font-size:0.88rem;">Bilan financier et opérationnel du premier trimestre.</p>
+            <small style="color:var(--muted-2);">Modifié il y a 30 jours</small>
+            <button class="btn-secondary" style="margin-top:0.4rem;">Ouvrir</button>
+          </div>
+        </div>
+        <div class="card" style="border-style:dashed;">
+          <div class="res-card" style="text-align:center; align-items:center;">
+            <div style="font-size:1.5rem; color:var(--muted);">＋</div>
+            <strong>Ajouter une ressource</strong>
+            <p style="color:var(--muted); font-size:0.88rem;">Upload un fichier ou colle un lien Drive/Notion.</p>
+            <button class="btn-primary" style="margin-top:0.4rem;">Ajouter</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMPTABILITÉ ============ -->
+    <section class="page-view" data-view="accounting">
+      <div class="page-header">
+        <span class="eyebrow">💰 Comptabilité</span>
+        <h1>Comptabilité <span class="accent">temps réel.</span></h1>
+        <p>Encaissements, dépenses, TVA et profitabilité par événement.</p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 1.2rem;">
+        <div class="metric-card">
+          <div class="label">Encaissements (Mai)</div>
+          <div class="num">€12 480</div>
+          <div class="trend up">▲ +18%</div>
+          <svg class="spark" viewBox="0 0 200 50" preserveAspectRatio="none">
+            <path d="M0,35 L25,30 L50,38 L75,28 L100,22 L125,26 L150,14 L175,18 L200,8" stroke="#10b981" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <div class="metric-card">
+          <div class="label">Dépenses (Mai)</div>
+          <div class="num">€5 240</div>
+          <div class="trend down">▼ -6%</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Marge nette</div>
+          <div class="num">€7 240</div>
+          <div class="trend up">58% margin</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">TVA à reverser</div>
+          <div class="num">€1 234</div>
+          <div class="trend neutral">17% appliqué</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Encaissements <span style="color:var(--muted); font-weight:500;">· 8 entrées</span></div>
+          </div>
+          <button class="btn-secondary">⬇ Exporter CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Source</th><th>Référence</th><th>Méthode</th><th>Status</th><th style="text-align:right;">Montant</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>26 mai 2025</td><td>ACME Corp</td><td>INV-2025-042</td><td><span style="background:rgba(255,255,255,0.05); padding:0.15rem 0.5rem; border-radius:6px; font-size:0.78rem;">Virement</span></td><td><span class="pill pill-paid">Payé</span></td><td style="text-align:right; font-weight:700;">€1 240,00</td></tr>
+              <tr><td>22 mai 2025</td><td>Wine tasting #18</td><td>EVT-018</td><td><span style="background:rgba(255,255,255,0.05); padding:0.15rem 0.5rem; border-radius:6px; font-size:0.78rem;">Payconiq</span></td><td><span class="pill pill-paid">Payé</span></td><td style="text-align:right; font-weight:700;">€3 600,00</td></tr>
+              <tr><td>18 mai 2025</td><td>Speed Dating #12</td><td>EVT-012</td><td><span style="background:rgba(255,255,255,0.05); padding:0.15rem 0.5rem; border-radius:6px; font-size:0.78rem;">Card</span></td><td><span class="pill pill-paid">Payé</span></td><td style="text-align:right; font-weight:700;">€2 240,00</td></tr>
+              <tr><td>15 mai 2025</td><td>Studio Loft</td><td>INV-2025-039</td><td><span style="background:rgba(255,255,255,0.05); padding:0.15rem 0.5rem; border-radius:6px; font-size:0.78rem;">Virement</span></td><td><span class="pill pill-pending">En attente</span></td><td style="text-align:right; font-weight:700;">€780,00</td></tr>
+              <tr><td>10 mai 2025</td><td>Quiz Night #5</td><td>EVT-005</td><td><span style="background:rgba(255,255,255,0.05); padding:0.15rem 0.5rem; border-radius:6px; font-size:0.78rem;">Card</span></td><td><span class="pill pill-paid">Payé</span></td><td style="text-align:right; font-weight:700;">€1 820,00</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td colspan="5">Total</td><td style="text-align:right;">€9 680,00</td></tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Dépenses par catégorie</div>
+          <div style="margin-top:0.8rem; display:grid; gap:0.6rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.8rem; background:var(--glass); border-radius:8px;">
+              <div>📍 Lieux <small style="color:var(--muted)">· 8 paiements</small></div>
+              <strong>€2 380</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.8rem; background:var(--glass); border-radius:8px;">
+              <div>📢 Marketing <small style="color:var(--muted)">· 4 paiements</small></div>
+              <strong>€1 240</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.8rem; background:var(--glass); border-radius:8px;">
+              <div>💻 Tech & SaaS <small style="color:var(--muted)">· 6 paiements</small></div>
+              <strong>€820</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.8rem; background:var(--glass); border-radius:8px;">
+              <div>🛒 Fournitures <small style="color:var(--muted)">· 3 paiements</small></div>
+              <strong>€520</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.8rem; background:var(--glass); border-radius:8px;">
+              <div>📦 Autre <small style="color:var(--muted)">· 2 paiements</small></div>
+              <strong>€280</strong>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">TVA mensuelle</div>
+          <div style="margin-top:0.8rem; display:grid; gap:0.6rem;">
+            <div style="display:flex; justify-content:space-between; padding:0.6rem 0.8rem; background:var(--glass); border-radius:8px;">
+              <div>TVA collectée<br><small style="color:var(--muted)">sur encaissements 17%</small></div>
+              <strong>€1 814</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.6rem 0.8rem; background:var(--glass); border-radius:8px;">
+              <div>TVA déductible<br><small style="color:var(--muted)">sur dépenses 17%</small></div>
+              <strong>€580</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.7rem 0.9rem; background:linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.1)); border-radius:8px; border:1px solid rgba(99,102,241,0.3);">
+              <div>TVA nette à reverser</div>
+              <strong style="color:var(--indigo-2);">€1 234</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SALAIRES ============ -->
+    <section class="page-view" data-view="payroll">
+      <div class="page-header">
+        <span class="eyebrow">💼 Salaires & paie</span>
+        <h1>Salaires <span class="accent">de l'équipe.</span></h1>
+        <p>Bulletins, charges patronales et notes de frais centralisés.</p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 1.2rem;">
+        <div class="metric-card">
+          <div class="label">Masse salariale (Mai)</div>
+          <div class="num">€16 800</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Charges patronales</div>
+          <div class="num">€4 240</div>
+          <div class="trend neutral">25.2%</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Net versé</div>
+          <div class="num">€12 560</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Notes de frais</div>
+          <div class="num">€340</div>
+          <div class="trend neutral">3 en attente</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Bulletins Mai 2025</div>
+          <button class="btn-primary">Générer bulletins</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Employé</th><th>Brut</th><th>Charges</th><th>Net</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Sébastien</strong> <small style="color:var(--muted)">CEO</small></td><td>€4 800</td><td>€1 210</td><td>€3 590</td><td><span class="pill pill-paid">Payé · 31/05</span></td></tr>
+              <tr><td><strong>Romain</strong> <small style="color:var(--muted)">COO</small></td><td>€4 800</td><td>€1 210</td><td>€3 590</td><td><span class="pill pill-paid">Payé · 31/05</span></td></tr>
+              <tr><td><strong>Claire</strong> <small style="color:var(--muted)">Comptable</small></td><td>€3 200</td><td>€806</td><td>€2 394</td><td><span class="pill pill-paid">Payé · 31/05</span></td></tr>
+              <tr><td><strong>Marie</strong> <small style="color:var(--muted)">Events</small></td><td>€2 400</td><td>€604</td><td>€1 796</td><td><span class="pill pill-paid">Payé · 31/05</span></td></tr>
+              <tr><td><strong>Julien</strong> <small style="color:var(--muted)">Logistique</small></td><td>€2 400</td><td>€604</td><td>€1 796</td><td><span class="pill pill-paid">Payé · 31/05</span></td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>Total équipe</td><td>€17 600</td><td>€4 434</td><td>€13 166</td><td></td></tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CALCULATOR ============ -->
+    <section class="page-view" data-view="calculator">
+      <div class="page-header">
+        <span class="eyebrow">🎟️ Outil interne</span>
+        <h1>Simulateur <span class="accent">de revenus.</span></h1>
+        <p>Modélise la billetterie de Speed Dating, Mixers, activités à thème et soirées spéciales. Tout se recalcule en temps réel.</p>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="background:#0d0b0e; padding:3rem; text-align:center; color:var(--muted);">
+          <div style="font-size:3rem;">🧮</div>
+          <p style="margin-top:1rem;">Iframe du Calculator (existant) intégré ici dans le thème dark.</p>
+          <small>L'outil garde son comportement actuel.</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PARAMÈTRES ============ -->
+    <section class="page-view" data-view="settings">
+      <div class="page-header">
+        <span class="eyebrow">⚙️ Paramètres du compte</span>
+        <h1>Mon <span class="accent">compte.</span></h1>
+        <p>Profil, sécurité et préférences de notification.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Profil</div>
+              <div class="card-sub">Tes infos visibles par l'équipe.</div>
+            </div>
+          </div>
+          <form>
+            <div class="form-field"><label>Nom complet</label><input type="text" value="Sébastien Reapers" /></div>
+            <div class="form-field"><label>Email pro</label><input type="email" value="sebastien@crush.lu" /></div>
+            <div class="form-field"><label>Téléphone</label><input type="text" value="+352 621 234 567" /></div>
+            <div class="form-field"><label>Poste</label><input type="text" value="Fondateur · CEO" disabled style="opacity:0.5;" /></div>
+            <button class="btn-primary" type="button">Enregistrer</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Sécurité</div>
+              <div class="card-sub">Mot de passe, 2FA, sessions actives.</div>
+            </div>
+          </div>
+          <div class="stack">
+            <div style="padding:0.9rem 1rem; background:var(--glass); border-radius:10px;">
+              <strong>🔐 Mot de passe</strong>
+              <p style="color:var(--muted); font-size:0.85rem; margin-top:0.3rem;">Dernier changement il y a 42 jours.</p>
+              <button class="btn-secondary" style="margin-top:0.6rem;">Modifier</button>
+            </div>
+            <div style="padding:0.9rem 1rem; background:var(--glass); border-radius:10px;">
+              <strong>📱 Authentification à 2 facteurs</strong>
+              <p style="color:var(--muted); font-size:0.85rem; margin-top:0.3rem;">App Google Authenticator activée.</p>
+              <button class="btn-secondary" style="margin-top:0.6rem;">Reconfigurer</button>
+            </div>
+            <div style="padding:0.9rem 1rem; background:var(--glass); border-radius:10px;">
+              <strong>💻 Sessions actives</strong>
+              <p style="color:var(--muted); font-size:0.85rem; margin-top:0.3rem;">2 navigateurs connectés (MacBook · iPhone)</p>
+              <button class="btn-secondary" style="margin-top:0.6rem;">Voir détail</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-head">
+          <div class="card-title">Notifications</div>
+        </div>
+        <div style="display:grid; gap:0.7rem; margin-top:0.4rem;">
+          <label style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0.9rem; background:var(--glass); border-radius:10px;">
+            <span>📧 Nouvelles demandes — par email</span><input type="checkbox" checked />
+          </label>
+          <label style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0.9rem; background:var(--glass); border-radius:10px;">
+            <span>💰 Encaissements — notification</span><input type="checkbox" checked />
+          </label>
+          <label style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0.9rem; background:var(--glass); border-radius:10px;">
+            <span>🗓️ Rappels de planning J-1</span><input type="checkbox" checked />
+          </label>
+          <label style="display:flex; justify-content:space-between; align-items:center; padding:0.7rem 0.9rem; background:var(--glass); border-radius:10px;">
+            <span>📊 Récap hebdo le dimanche soir</span><input type="checkbox" />
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<button class="hold-version">🕰 Version d'origine</button>
+
+<script>
+  // Page navigation
+  const links = document.querySelectorAll(".nav-link");
+  const views = document.querySelectorAll(".page-view");
+
+  function showPage(name) {
+    links.forEach((l) => l.classList.toggle("active", l.dataset.page === name));
+    views.forEach((v) => v.classList.toggle("active", v.dataset.view === name));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  links.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (link.classList.contains("locked")) return;
+      showPage(link.dataset.page);
+    });
+  });
+
+  document.querySelectorAll("[data-go]").forEach((el) =>
+    el.addEventListener("click", () => showPage(el.dataset.go)),
+  );
+
+  // Dropdown toggle on user chip
+  const userChip = document.getElementById("userChip");
+  userChip.addEventListener("click", () => userChip.classList.toggle("open"));
+  document.addEventListener("click", (e) => {
+    if (!userChip.contains(e.target)) userChip.classList.remove("open");
+  });
+
+  // Role-as-view switcher (dev) — locks sidebar modules per role
+  const ROLE_MODULES = {
+    founder:    new Set(["dashboard","planning","team","requests","locations","resources","calculator","accounting","payroll","settings"]),
+    cofounder:  new Set(["dashboard","planning","team","requests","locations","resources","calculator","accounting","payroll","settings"]),
+    accountant: new Set(["dashboard","accounting","payroll","calculator","settings"]),
+    employee:   new Set(["dashboard","planning","requests","resources","settings"]),
+  };
+
+  const ROLE_USER = {
+    founder:    { name: "Sébastien", role: "Fondateur",    avatar: "S" },
+    cofounder:  { name: "Romain",    role: "Co-fondateur", avatar: "R" },
+    accountant: { name: "Claire",    role: "Comptable",    avatar: "C" },
+    employee:   { name: "Julien",    role: "Employé",      avatar: "J" },
+  };
+
+  const roleButtons = userChip.querySelectorAll(".menu-item[data-role]");
+  roleButtons.forEach((b) => {
+    b.addEventListener("click", () => {
+      roleButtons.forEach((x) => x.classList.remove("active"));
+      b.classList.add("active");
+
+      const role = b.dataset.role;
+      const modules = ROLE_MODULES[role];
+      links.forEach((l) => {
+        l.classList.toggle("locked", !modules.has(l.dataset.page));
+      });
+
+      // If the current page is locked under this role, jump to the first allowed
+      const activeNav = document.querySelector(".nav-link.active");
+      if (activeNav && activeNav.classList.contains("locked")) {
+        const first = [...links].find((l) => !l.classList.contains("locked"));
+        if (first) showPage(first.dataset.page);
+      }
+
+      const u = ROLE_USER[role];
+      userChip.querySelector(".name").textContent = u.name;
+      userChip.querySelector(".role-tag").textContent = u.role;
+      userChip.querySelector(".avatar").textContent = u.avatar;
+
+      userChip.classList.remove("open");
+    });
+  });
+</script>
+
+</body>
+</html>
