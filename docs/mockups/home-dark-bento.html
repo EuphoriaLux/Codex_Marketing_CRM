@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crush Hub — Dark Bento Mockup</title>
+<style>
+  :root {
+    --bg: #0a0b1e;
+    --surface: #131527;
+    --surface-2: #1a1d35;
+    --glass: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --indigo: #6366f1;
+    --indigo-2: #818cf8;
+    --magenta: #ec4899;
+    --cyan: #06b6d4;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --text: #f5f5f7;
+    --muted: #9ca3af;
+    --muted-2: #6b7280;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Aurora animated background */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(800px circle at 20% 10%, rgba(99, 102, 241, 0.25), transparent 50%),
+      radial-gradient(700px circle at 80% 0%, rgba(236, 72, 153, 0.20), transparent 45%),
+      radial-gradient(900px circle at 60% 80%, rgba(6, 182, 212, 0.15), transparent 50%);
+    animation: aurora 20s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  @keyframes aurora {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(-30px, 20px) scale(1.05); }
+    100% { transform: translate(20px, -10px) scale(0.98); }
+  }
+
+  .scene { position: relative; z-index: 1; }
+
+  /* Top nav */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    background: rgba(10, 11, 30, 0.6);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-mark {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--indigo), var(--magenta));
+    display: grid;
+    place-items: center;
+    color: white;
+    font-weight: 800;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .nav-right a { color: var(--muted); text-decoration: none; transition: color 150ms; }
+  .nav-right a:hover { color: var(--text); }
+
+  .lang-toggle, .theme-toggle {
+    width: 36px; height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--glass);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 150ms;
+    display: grid;
+    place-items: center;
+  }
+  .lang-toggle:hover, .theme-toggle:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* View switcher (mockup-only control) */
+  .view-switcher {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 100;
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  .view-switcher button {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    color: var(--muted);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 150ms;
+  }
+  .view-switcher button.active {
+    background: linear-gradient(135deg, var(--indigo), var(--magenta));
+    color: white;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  }
+  .view-switcher button:hover:not(.active) { color: var(--text); }
+
+  /* =========== PRE-LOGIN VIEW =========== */
+
+  .pre-login {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 2rem;
+    padding: 4rem 2.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .hero {
+    display: grid;
+    align-content: start;
+    gap: 1.5rem;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    width: max-content;
+    backdrop-filter: blur(10px);
+  }
+
+  .eyebrow .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    box-shadow: 0 0 8px var(--emerald);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+  }
+
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, var(--indigo-2), var(--magenta), var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+
+  .hero p.lead {
+    font-size: 1.15rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 32rem;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .stat {
+    padding: 1.1rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+  }
+  .stat .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text), var(--muted));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .stat .label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .feature-list {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .feature-list li {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .feature-list .check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--emerald);
+    display: grid;
+    place-items: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Login panel */
+  .login-panel {
+    padding: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), transparent 30%, transparent 70%, rgba(236, 72, 153, 0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .login-panel h2 {
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+  }
+  .login-panel .sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .field input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 0.95rem;
+    transition: all 150ms;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.95rem 1.2rem;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--indigo), #4f46e5);
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 150ms;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 1.3rem 0;
+    color: var(--muted-2);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .btn-sso {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--glass);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    transition: all 150ms;
+  }
+  .btn-sso:hover {
+    border-color: var(--indigo);
+    background: rgba(99, 102, 241, 0.08);
+  }
+
+  .role-hint {
+    margin-top: 1.5rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--muted-2);
+    text-align: center;
+  }
+
+  /* =========== POST-LOGIN VIEW =========== */
+
+  .post-login {
+    padding: 1.5rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0.9rem 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .search {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0.9rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .icon-btn {
+    position: relative;
+    width: 38px; height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--glass);
+    color: var(--muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--border-strong); }
+
+  .icon-btn .badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--magenta);
+    box-shadow: 0 0 6px var(--magenta);
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.4rem 0.9rem 0.4rem 0.4rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 150ms;
+    position: relative;
+  }
+  .user-chip:hover { border-color: var(--border-strong); }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--indigo), var(--magenta));
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: white;
+  }
+
+  .user-chip .name {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+  .user-chip .role-tag {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* Role menu */
+  .user-chip .menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 240px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 0.4rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: all 150ms;
+    z-index: 50;
+  }
+  .user-chip.open .menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .menu-item {
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .menu-item:hover { background: var(--glass); }
+  .menu-section {
+    padding: 0.5rem 0.8rem 0.3rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted-2);
+    font-weight: 700;
+  }
+  .menu-divider { height: 1px; background: var(--border); margin: 0.3rem 0; }
+
+  .role-radio {
+    width: 14px; height: 14px;
+    border: 2px solid var(--muted-2);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+  }
+  .menu-item.active .role-radio { border-color: var(--indigo); }
+  .menu-item.active .role-radio::after {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--indigo);
+  }
+  .menu-item.active { color: var(--indigo-2); }
+
+  /* Bento grid */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+    gap: 1rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.3rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 200ms;
+  }
+  .card:hover { border-color: var(--border-strong); }
+
+  .card-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px circle at top right, rgba(99, 102, 241, 0.12), transparent 50%);
+    pointer-events: none;
+  }
+
+  .card .label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* Specific cards layout */
+  .card-welcome { grid-column: span 4; }
+  .card-requests { grid-column: span 4; }
+  .card-revenue { grid-column: span 4; }
+  .card-access { grid-column: span 12; }
+  .card-events { grid-column: span 6; }
+  .card-activity { grid-column: span 6; }
+  .card-priority { grid-column: span 12; }
+
+  /* Welcome card */
+  .welcome-greeting {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .welcome-sub { color: var(--muted); font-size: 0.88rem; margin-top: 0.2rem; }
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.9rem;
+    padding: 0.35rem 0.75rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.1));
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--indigo-2);
+  }
+
+  /* Big metric */
+  .big-num {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-top: 0.3rem;
+    background: linear-gradient(135deg, var(--text), var(--muted));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--emerald);
+  }
+  .trend.down { color: var(--rose); }
+
+  /* Sparkline */
+  .spark {
+    margin-top: 0.6rem;
+    width: 100%;
+    height: 50px;
+  }
+
+  /* Quick access */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.7rem;
+    margin-top: 0.6rem;
+  }
+  .quick-tile {
+    aspect-ratio: 1.2;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: grid;
+    align-content: center;
+    gap: 0.4rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 200ms;
+    padding: 0.7rem;
+  }
+  .quick-tile:hover {
+    border-color: var(--indigo);
+    background: rgba(99, 102, 241, 0.08);
+    transform: translateY(-2px);
+  }
+  .quick-tile .ico { font-size: 1.4rem; }
+  .quick-tile .lbl {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .quick-tile:hover .lbl { color: var(--text); }
+  .quick-tile.locked { opacity: 0.35; cursor: not-allowed; }
+  .quick-tile.locked:hover { border-color: var(--border); background: var(--glass); transform: none; }
+
+  /* Event list */
+  .ev-list { display: grid; gap: 0.7rem; margin-top: 0.6rem; }
+  .ev-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.7rem 0.9rem;
+    background: var(--glass);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .ev-date {
+    text-align: center;
+    padding: 0.3rem 0.5rem;
+    background: rgba(99, 102, 241, 0.15);
+    border-radius: 8px;
+    min-width: 48px;
+  }
+  .ev-date .d { font-size: 1.1rem; font-weight: 800; color: var(--indigo-2); line-height: 1; }
+  .ev-date .m { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; }
+  .ev-info { display: grid; gap: 0.15rem; }
+  .ev-info strong { font-size: 0.92rem; }
+  .ev-info span { font-size: 0.78rem; color: var(--muted); }
+  .ev-guests {
+    padding: 0.25rem 0.6rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* Activity feed */
+  .act-list { display: grid; gap: 0.6rem; margin-top: 0.6rem; }
+  .act-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.7rem 0.4rem;
+    font-size: 0.88rem;
+  }
+  .act-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--indigo);
+  }
+  .act-dot.green { background: var(--emerald); }
+  .act-dot.amber { background: var(--amber); }
+  .act-dot.rose  { background: var(--rose); }
+  .act-time { font-size: 0.75rem; color: var(--muted-2); }
+
+  /* Priority requests */
+  .pr-list { display: grid; gap: 0.6rem; margin-top: 0.6rem; }
+  .pr-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    background: var(--glass);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 150ms;
+    cursor: pointer;
+  }
+  .pr-row:hover { border-color: var(--indigo); }
+  .pr-id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .pill-priority {
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .pill-priority.high { background: rgba(244, 63, 94, 0.18); color: #fda4af; }
+  .pr-age { color: var(--muted); font-size: 0.85rem; }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .link-more {
+    color: var(--indigo-2);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .link-more:hover { text-decoration: underline; }
+
+  /* View toggle */
+  .pre-login.hidden, .post-login.hidden { display: none; }
+
+  @media (max-width: 900px) {
+    .pre-login { grid-template-columns: 1fr; padding: 2rem 1rem; }
+    .card-welcome, .card-requests, .card-revenue,
+    .card-events, .card-activity { grid-column: span 12; }
+    .quick-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene">
+
+  <!-- ============ NAV ============ -->
+  <nav class="nav" id="topNav">
+    <div class="brand">
+      <div class="brand-mark">◆</div>
+      <span>Crush Hub</span>
+    </div>
+    <div class="nav-right" id="navRightPre">
+      <span style="font-size:0.82rem; padding:0.3rem 0.7rem; background:var(--glass); border:1px solid var(--border); border-radius:999px;">🔒 Espace interne</span>
+      <button class="lang-toggle" title="Langue">FR</button>
+      <button class="theme-toggle" title="Theme">🌙</button>
+    </div>
+    <div class="nav-right" id="navRightPost" style="display:none;">
+      <button class="icon-btn" title="Notifications">
+        🔔
+        <span class="badge"></span>
+      </button>
+      <div class="user-chip" id="userChip" onclick="toggleMenu()">
+        <div class="avatar" id="userAvatar">S</div>
+        <div>
+          <div class="name" id="userName">Sébastien</div>
+          <div class="role-tag" id="userRoleTag">Admin</div>
+        </div>
+        <span style="color:var(--muted); font-size:0.7rem;">▾</span>
+
+        <div class="menu" id="userMenu" onclick="event.stopPropagation()">
+          <div class="menu-item"><span>👤</span> Profil</div>
+          <div class="menu-item"><span>⚙</span> Paramètres</div>
+          <div class="menu-divider"></div>
+          <div class="menu-section">🧪 Dev — Changer de rôle</div>
+          <div class="menu-item active" onclick="setRole('founder')"><span class="role-radio"></span> Fondateur</div>
+          <div class="menu-item" onclick="setRole('cofounder')"><span class="role-radio"></span> Co-fondateur</div>
+          <div class="menu-item" onclick="setRole('accountant')"><span class="role-radio"></span> Comptable</div>
+          <div class="menu-item" onclick="setRole('employee')"><span class="role-radio"></span> Employé</div>
+          <div class="menu-divider"></div>
+          <div class="menu-item"><span>🚪</span> Se déconnecter</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ PRE-LOGIN ============ -->
+  <div class="pre-login" id="preLogin">
+
+    <section class="hero">
+      <span class="eyebrow"><span class="dot"></span> Accès réservé · équipe Crush.lu</span>
+
+      <h1>
+        L'espace interne<br/>
+        <span class="gradient">de l'équipe<br/>Crush.lu.</span>
+      </h1>
+
+      <p class="lead">
+        Pilotage, comptabilité et planning d'équipe réunis dans un seul espace
+        sécurisé pour les fondateurs, le comptable et les employés.
+      </p>
+
+      <div class="hero-stats">
+        <div class="stat"><div class="num">42</div><div class="label">Événements à venir</div></div>
+        <div class="stat"><div class="num">6</div><div class="label">Membres de l'équipe</div></div>
+        <div class="stat"><div class="num">€14k</div><div class="label">En attente paiement</div></div>
+      </div>
+
+      <ul class="feature-list">
+        <li><span class="check">✓</span> Pilotage global pour les fondateurs</li>
+        <li><span class="check">✓</span> Espace comptable dédié (paiements, salaires, TVA)</li>
+        <li><span class="check">✓</span> Planning d'équipe & disponibilités des employés</li>
+        <li><span class="check">✓</span> Accès cloisonné par rôle</li>
+      </ul>
+    </section>
+
+    <aside class="login-panel">
+      <h2>Connexion équipe</h2>
+      <p class="sub">Identifiez-vous avec votre compte Crush.lu.</p>
+
+      <div class="field">
+        <label>Email professionnel</label>
+        <input type="email" placeholder="prenom@crush.lu" />
+      </div>
+
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" placeholder="••••••••" />
+      </div>
+
+      <button class="btn-primary" onclick="goToPostLogin()">
+        Accéder à mon espace →
+      </button>
+
+      <div class="divider">ou</div>
+
+      <button class="btn-sso" onclick="goToPostLogin()">
+        ⚡ Continuer avec Crush.lu
+      </button>
+
+      <div class="role-hint">
+        Votre interface s'adapte à votre poste<br/>
+        (Fondateur · Co-fondateur · Comptable · Employé)
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ============ POST-LOGIN ============ -->
+  <div class="post-login hidden" id="postLogin">
+
+    <div class="topbar">
+      <div class="search">
+        <span>🔍</span>
+        <span>Rechercher un client, un événement, une facture...</span>
+      </div>
+      <div class="topbar-right">
+        <span style="color:var(--muted); font-size:0.85rem;" id="apiBadge">🔒 Session sécurisée</span>
+      </div>
+    </div>
+
+    <div class="bento" id="bentoGrid">
+
+      <!-- Welcome -->
+      <div class="card card-welcome card-glow">
+        <div class="label">Bienvenue</div>
+        <div class="welcome-greeting" id="welcomeName">Bonsoir, Sébastien.</div>
+        <div class="welcome-sub">Dernière connexion il y a 2h.</div>
+        <span class="role-badge" id="welcomeRoleBadge">🌟 Fondateur · Accès complet</span>
+      </div>
+
+      <!-- Active requests -->
+      <div class="card card-requests">
+        <div class="label">Demandes en cours</div>
+        <div class="big-num" id="reqCount">12</div>
+        <div class="trend">▲ +3 cette semaine</div>
+        <svg class="spark" viewBox="0 0 200 50" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="sg1" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,40 L25,32 L50,36 L75,22 L100,28 L125,18 L150,24 L175,12 L200,16 L200,50 L0,50 Z" fill="url(#sg1)"/>
+          <path d="M0,40 L25,32 L50,36 L75,22 L100,28 L125,18 L150,24 L175,12 L200,16" stroke="#818cf8" stroke-width="2" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- Revenue -->
+      <div class="card card-revenue" id="revenueCard">
+        <div class="label">Chiffre d'affaires ce mois</div>
+        <div class="big-num">€12 480</div>
+        <div class="trend">▲ +18% vs mois dernier</div>
+        <svg class="spark" viewBox="0 0 200 50" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="sg2" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,35 L25,30 L50,38 L75,28 L100,22 L125,26 L150,14 L175,18 L200,8 L200,50 L0,50 Z" fill="url(#sg2)"/>
+          <path d="M0,35 L25,30 L50,38 L75,28 L100,22 L125,26 L150,14 L175,18 L200,8" stroke="#10b981" stroke-width="2" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- Quick access -->
+      <div class="card card-access">
+        <div class="card-head">
+          <h3>Accès rapide</h3>
+          <span style="color:var(--muted); font-size:0.82rem;" id="accessVisible">9 modules · adaptés à votre poste</span>
+        </div>
+        <div class="quick-grid" id="quickGrid">
+          <div class="quick-tile" data-mod="dashboard"><div class="ico">📊</div><div class="lbl">Tableau de bord</div></div>
+          <div class="quick-tile" data-mod="planning"><div class="ico">🗓️</div><div class="lbl">Planning</div></div>
+          <div class="quick-tile" data-mod="team"><div class="ico">👥</div><div class="lbl">Équipe</div></div>
+          <div class="quick-tile" data-mod="requests"><div class="ico">📋</div><div class="lbl">Demandes</div></div>
+          <div class="quick-tile" data-mod="locations"><div class="ico">📍</div><div class="lbl">Lieux</div></div>
+          <div class="quick-tile" data-mod="accounting"><div class="ico">💰</div><div class="lbl">Comptabilité</div></div>
+          <div class="quick-tile" data-mod="payroll"><div class="ico">💼</div><div class="lbl">Salaires</div></div>
+          <div class="quick-tile" data-mod="calculator"><div class="ico">🎟️</div><div class="lbl">Calculator</div></div>
+          <div class="quick-tile" data-mod="settings"><div class="ico">⚙️</div><div class="lbl">Paramètres</div></div>
+        </div>
+      </div>
+
+      <!-- Next events / shifts -->
+      <div class="card card-events">
+        <div class="card-head">
+          <h3 id="eventsTitle">📅 Prochains événements de l'équipe</h3>
+          <a href="#" class="link-more">Planning complet →</a>
+        </div>
+        <div class="ev-list" id="eventsList">
+          <div class="ev-row">
+            <div class="ev-date"><div class="d">30</div><div class="m">Mai</div></div>
+            <div class="ev-info"><strong>Wine tasting</strong><span>La Cave · 19:00 · 3 membres</span></div>
+            <div class="ev-guests">24 invités</div>
+          </div>
+          <div class="ev-row">
+            <div class="ev-date"><div class="d">02</div><div class="m">Juin</div></div>
+            <div class="ev-info"><strong>Cooking workshop</strong><span>Atelier · 18:30 · 2 membres</span></div>
+            <div class="ev-guests">18 invités</div>
+          </div>
+          <div class="ev-row">
+            <div class="ev-date"><div class="d">07</div><div class="m">Juin</div></div>
+            <div class="ev-info"><strong>Speed dating</strong><span>Le Loft · 20:00 · 4 membres</span></div>
+            <div class="ev-guests">32 invités</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="card card-activity">
+        <div class="card-head">
+          <h3 id="activityTitle">⚡ Activité de l'équipe</h3>
+          <a href="#" class="link-more">Tout voir →</a>
+        </div>
+        <div class="act-list" id="activityList">
+          <div class="act-row">
+            <span class="act-dot"></span>
+            <span><strong>Julien</strong> s'est positionné sur Wine tasting (30/05)</span>
+            <span class="act-time">il y a 12m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-dot green"></span>
+            <span>Facture payée — <strong>ACME · €1 240</strong></span>
+            <span class="act-time">il y a 1h</span>
+          </div>
+          <div class="act-row">
+            <span class="act-dot amber"></span>
+            <span><strong>Marie</strong> a soumis sa disponibilité juin</span>
+            <span class="act-time">il y a 3h</span>
+          </div>
+          <div class="act-row">
+            <span class="act-dot rose"></span>
+            <span>Salaires Mai validés par le comptable</span>
+            <span class="act-time">hier</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority / To-do -->
+      <div class="card card-priority">
+        <div class="card-head">
+          <h3 id="priorityTitle">🎯 À traiter en priorité</h3>
+          <a href="#" class="link-more">Tout voir →</a>
+        </div>
+        <div class="pr-list" id="priorityList">
+          <div class="pr-row">
+            <span class="pr-id">#REQ-042</span>
+            <span>Valider le catering pour l'événement du 30/05</span>
+            <span class="pill-priority high">Urgent</span>
+            <span class="pr-age">2 jours</span>
+          </div>
+          <div class="pr-row">
+            <span class="pr-id">#REQ-039</span>
+            <span>Confirmer la venue pour Speed Dating du 07/06</span>
+            <span class="pill-priority high">Urgent</span>
+            <span class="pr-age">5 jours</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- View switcher (mockup-only) -->
+<div class="view-switcher">
+  <button id="btnPre" class="active" onclick="showView('pre')">Pré-login</button>
+  <button id="btnPost" onclick="showView('post')">Post-login</button>
+</div>
+
+<script>
+  // Role definitions (équipe interne Crush.lu)
+  const ROLES = {
+    founder: {
+      name: "Fondateur",
+      badge: "🌟 Fondateur · Accès complet",
+      modules: ["dashboard", "planning", "team", "requests", "locations", "accounting", "payroll", "calculator", "settings"],
+      showRevenue: true,
+      welcome: "Bonsoir, Sébastien.",
+      avatar: "S",
+      eventsTitle: "📅 Prochains événements de l'équipe",
+      activityTitle: "⚡ Activité de l'équipe",
+      priorityTitle: "🎯 À traiter en priorité"
+    },
+    cofounder: {
+      name: "Co-fondateur",
+      badge: "✨ Co-fondateur · Accès complet",
+      modules: ["dashboard", "planning", "team", "requests", "locations", "accounting", "payroll", "calculator", "settings"],
+      showRevenue: true,
+      welcome: "Bonsoir, Romain.",
+      avatar: "R",
+      eventsTitle: "📅 Prochains événements de l'équipe",
+      activityTitle: "⚡ Activité de l'équipe",
+      priorityTitle: "🎯 À traiter en priorité"
+    },
+    accountant: {
+      name: "Comptable",
+      badge: "📊 Comptable · Finances",
+      modules: ["dashboard", "accounting", "payroll", "calculator"],
+      showRevenue: true,
+      welcome: "Bonjour, Claire.",
+      avatar: "C",
+      eventsTitle: "📅 Événements à facturer",
+      activityTitle: "⚡ Activité financière",
+      priorityTitle: "🎯 Factures & paiements à traiter"
+    },
+    employee: {
+      name: "Employé",
+      badge: "👤 Employé · Mon espace",
+      modules: ["dashboard", "planning", "requests"],
+      showRevenue: false,
+      welcome: "Bonsoir, Julien.",
+      avatar: "J",
+      eventsTitle: "📅 Mes prochains shifts",
+      activityTitle: "⚡ Mon activité",
+      priorityTitle: "🎯 Demandes & disponibilités à confirmer"
+    }
+  };
+
+  function showView(v) {
+    const pre = document.getElementById("preLogin");
+    const post = document.getElementById("postLogin");
+    const npRight = document.getElementById("navRightPre");
+    const npPost = document.getElementById("navRightPost");
+    const btnPre = document.getElementById("btnPre");
+    const btnPost = document.getElementById("btnPost");
+
+    if (v === "pre") {
+      pre.classList.remove("hidden");
+      post.classList.add("hidden");
+      npRight.style.display = "flex";
+      npPost.style.display = "none";
+      btnPre.classList.add("active");
+      btnPost.classList.remove("active");
+    } else {
+      pre.classList.add("hidden");
+      post.classList.remove("hidden");
+      npRight.style.display = "none";
+      npPost.style.display = "flex";
+      btnPre.classList.remove("active");
+      btnPost.classList.add("active");
+    }
+  }
+
+  function goToPostLogin() {
+    showView("post");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function toggleMenu() {
+    document.getElementById("userChip").classList.toggle("open");
+  }
+  document.addEventListener("click", (e) => {
+    const chip = document.getElementById("userChip");
+    if (chip && !chip.contains(e.target)) chip.classList.remove("open");
+  });
+
+  function setRole(role) {
+    const r = ROLES[role];
+    if (!r) return;
+
+    // Update user chip
+    document.getElementById("userName").textContent = r.welcome.replace("Bonsoir, ", "").replace(".", "");
+    document.getElementById("userRoleTag").textContent = r.name;
+    document.getElementById("userAvatar").textContent = r.avatar;
+
+    // Welcome card
+    document.getElementById("welcomeName").textContent = r.welcome;
+    document.getElementById("welcomeRoleBadge").textContent = r.badge;
+
+    // Revenue card
+    document.getElementById("revenueCard").style.display = r.showRevenue ? "" : "none";
+
+    // Quick access — lock unavailable
+    const tiles = document.querySelectorAll(".quick-tile");
+    let visible = 0;
+    tiles.forEach((t) => {
+      const mod = t.dataset.mod;
+      if (r.modules.includes(mod)) {
+        t.classList.remove("locked");
+        visible++;
+      } else {
+        t.classList.add("locked");
+      }
+    });
+    document.getElementById("accessVisible").textContent =
+      `${visible} module${visible > 1 ? 's' : ''} · adaptés à votre poste`;
+
+    // Section titles
+    document.getElementById("eventsTitle").textContent = r.eventsTitle;
+    document.getElementById("activityTitle").textContent = r.activityTitle;
+    document.getElementById("priorityTitle").textContent = r.priorityTitle;
+
+    // Menu active state
+    document.querySelectorAll(".menu-item.active").forEach((m) => m.classList.remove("active"));
+    event.currentTarget.classList.add("active");
+  }
+</script>
+
+</body>
+</html>
