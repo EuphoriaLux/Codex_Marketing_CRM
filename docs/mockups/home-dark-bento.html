@@ -807,8 +807,7 @@
       <span>Crush Hub</span>
     </div>
     <div class="nav-right" id="navRightPre">
-      <a href="#">Découvrir</a>
-      <a href="#">Partenariat</a>
+      <span style="font-size:0.82rem; padding:0.3rem 0.7rem; background:var(--glass); border:1px solid var(--border); border-radius:999px;">🔒 Espace interne</span>
       <button class="lang-toggle" title="Langue">FR</button>
       <button class="theme-toggle" title="Theme">🌙</button>
     </div>
@@ -829,11 +828,11 @@
           <div class="menu-item"><span>👤</span> Profil</div>
           <div class="menu-item"><span>⚙</span> Paramètres</div>
           <div class="menu-divider"></div>
-          <div class="menu-section">🧪 Dev — Switch role</div>
-          <div class="menu-item active" onclick="setRole('admin')"><span class="role-radio"></span> Admin</div>
-          <div class="menu-item" onclick="setRole('staff')"><span class="role-radio"></span> Staff</div>
-          <div class="menu-item" onclick="setRole('partner')"><span class="role-radio"></span> Partner</div>
-          <div class="menu-item" onclick="setRole('client')"><span class="role-radio"></span> Client</div>
+          <div class="menu-section">🧪 Dev — Changer de rôle</div>
+          <div class="menu-item active" onclick="setRole('founder')"><span class="role-radio"></span> Fondateur</div>
+          <div class="menu-item" onclick="setRole('cofounder')"><span class="role-radio"></span> Co-fondateur</div>
+          <div class="menu-item" onclick="setRole('accountant')"><span class="role-radio"></span> Comptable</div>
+          <div class="menu-item" onclick="setRole('employee')"><span class="role-radio"></span> Employé</div>
           <div class="menu-divider"></div>
           <div class="menu-item"><span>🚪</span> Se déconnecter</div>
         </div>
@@ -845,39 +844,39 @@
   <div class="pre-login" id="preLogin">
 
     <section class="hero">
-      <span class="eyebrow"><span class="dot"></span> Live · 12 événements ce mois</span>
+      <span class="eyebrow"><span class="dot"></span> Accès réservé · équipe Crush.lu</span>
 
       <h1>
-        Crush Hub<br/>
-        <span class="gradient">le pilotage<br/>par excellence.</span>
+        L'espace interne<br/>
+        <span class="gradient">de l'équipe<br/>Crush.lu.</span>
       </h1>
 
       <p class="lead">
-        Centralisez vos événements, lieux partenaires, clients et finances dans
-        une seule interface pensée pour Crush.lu.
+        Pilotage, comptabilité et planning d'équipe réunis dans un seul espace
+        sécurisé pour les fondateurs, le comptable et les employés.
       </p>
 
       <div class="hero-stats">
-        <div class="stat"><div class="num">42</div><div class="label">Événements actifs</div></div>
-        <div class="stat"><div class="num">18</div><div class="label">Lieux partenaires</div></div>
-        <div class="stat"><div class="num">1.2k</div><div class="label">Clients suivis</div></div>
+        <div class="stat"><div class="num">42</div><div class="label">Événements à venir</div></div>
+        <div class="stat"><div class="num">6</div><div class="label">Membres de l'équipe</div></div>
+        <div class="stat"><div class="num">€14k</div><div class="label">En attente paiement</div></div>
       </div>
 
       <ul class="feature-list">
-        <li><span class="check">✓</span> Calculator d'événements en temps réel</li>
-        <li><span class="check">✓</span> Gestion clients, lieux et requests unifiée</li>
-        <li><span class="check">✓</span> Accounting et profitabilité par événement</li>
-        <li><span class="check">✓</span> Accès personnalisé selon votre rôle</li>
+        <li><span class="check">✓</span> Pilotage global pour les fondateurs</li>
+        <li><span class="check">✓</span> Espace comptable dédié (paiements, salaires, TVA)</li>
+        <li><span class="check">✓</span> Planning d'équipe & disponibilités des employés</li>
+        <li><span class="check">✓</span> Accès cloisonné par rôle</li>
       </ul>
     </section>
 
     <aside class="login-panel">
-      <h2>Se connecter</h2>
-      <p class="sub">Accédez à votre espace Crush Hub.</p>
+      <h2>Connexion équipe</h2>
+      <p class="sub">Identifiez-vous avec votre compte Crush.lu.</p>
 
       <div class="field">
-        <label>Email</label>
-        <input type="email" placeholder="vous@crush.lu" />
+        <label>Email professionnel</label>
+        <input type="email" placeholder="prenom@crush.lu" />
       </div>
 
       <div class="field">
@@ -886,7 +885,7 @@
       </div>
 
       <button class="btn-primary" onclick="goToPostLogin()">
-        Se connecter →
+        Accéder à mon espace →
       </button>
 
       <div class="divider">ou</div>
@@ -896,8 +895,8 @@
       </button>
 
       <div class="role-hint">
-        Votre accès s'adapte automatiquement à votre rôle<br/>
-        (Admin · Staff · Partner · Client)
+        Votre interface s'adapte à votre poste<br/>
+        (Fondateur · Co-fondateur · Comptable · Employé)
       </div>
     </aside>
 
@@ -912,7 +911,7 @@
         <span>Rechercher un client, un événement, une facture...</span>
       </div>
       <div class="topbar-right">
-        <span style="color:var(--muted); font-size:0.85rem;" id="apiBadge">Django API · Live</span>
+        <span style="color:var(--muted); font-size:0.85rem;" id="apiBadge">🔒 Session sécurisée</span>
       </div>
     </div>
 
@@ -923,12 +922,12 @@
         <div class="label">Bienvenue</div>
         <div class="welcome-greeting" id="welcomeName">Bonsoir, Sébastien.</div>
         <div class="welcome-sub">Dernière connexion il y a 2h.</div>
-        <span class="role-badge" id="welcomeRoleBadge">🌟 Admin · Accès complet</span>
+        <span class="role-badge" id="welcomeRoleBadge">🌟 Fondateur · Accès complet</span>
       </div>
 
       <!-- Active requests -->
       <div class="card card-requests">
-        <div class="label">Requests actives</div>
+        <div class="label">Demandes en cours</div>
         <div class="big-num" id="reqCount">12</div>
         <div class="trend">▲ +3 cette semaine</div>
         <svg class="spark" viewBox="0 0 200 50" preserveAspectRatio="none">
@@ -945,7 +944,7 @@
 
       <!-- Revenue -->
       <div class="card card-revenue" id="revenueCard">
-        <div class="label">Revenue ce mois</div>
+        <div class="label">Chiffre d'affaires ce mois</div>
         <div class="big-num">€12 480</div>
         <div class="trend">▲ +18% vs mois dernier</div>
         <svg class="spark" viewBox="0 0 200 50" preserveAspectRatio="none">
@@ -964,40 +963,41 @@
       <div class="card card-access">
         <div class="card-head">
           <h3>Accès rapide</h3>
-          <span style="color:var(--muted); font-size:0.82rem;" id="accessVisible">8 modules · adapté à votre rôle</span>
+          <span style="color:var(--muted); font-size:0.82rem;" id="accessVisible">9 modules · adaptés à votre poste</span>
         </div>
         <div class="quick-grid" id="quickGrid">
-          <div class="quick-tile" data-mod="dashboard"><div class="ico">📊</div><div class="lbl">Dashboard</div></div>
-          <div class="quick-tile" data-mod="requests"><div class="ico">📋</div><div class="lbl">Requests</div></div>
-          <div class="quick-tile" data-mod="resources"><div class="ico">📁</div><div class="lbl">Resources</div></div>
-          <div class="quick-tile" data-mod="locations"><div class="ico">📍</div><div class="lbl">Locations</div></div>
-          <div class="quick-tile" data-mod="accounting"><div class="ico">💰</div><div class="lbl">Accounting</div></div>
-          <div class="quick-tile" data-mod="partnership"><div class="ico">🤝</div><div class="lbl">Partnership</div></div>
+          <div class="quick-tile" data-mod="dashboard"><div class="ico">📊</div><div class="lbl">Tableau de bord</div></div>
+          <div class="quick-tile" data-mod="planning"><div class="ico">🗓️</div><div class="lbl">Planning</div></div>
+          <div class="quick-tile" data-mod="team"><div class="ico">👥</div><div class="lbl">Équipe</div></div>
+          <div class="quick-tile" data-mod="requests"><div class="ico">📋</div><div class="lbl">Demandes</div></div>
+          <div class="quick-tile" data-mod="locations"><div class="ico">📍</div><div class="lbl">Lieux</div></div>
+          <div class="quick-tile" data-mod="accounting"><div class="ico">💰</div><div class="lbl">Comptabilité</div></div>
+          <div class="quick-tile" data-mod="payroll"><div class="ico">💼</div><div class="lbl">Salaires</div></div>
           <div class="quick-tile" data-mod="calculator"><div class="ico">🎟️</div><div class="lbl">Calculator</div></div>
-          <div class="quick-tile" data-mod="settings"><div class="ico">⚙️</div><div class="lbl">Settings</div></div>
+          <div class="quick-tile" data-mod="settings"><div class="ico">⚙️</div><div class="lbl">Paramètres</div></div>
         </div>
       </div>
 
-      <!-- Next events -->
+      <!-- Next events / shifts -->
       <div class="card card-events">
         <div class="card-head">
-          <h3>📅 Prochains événements</h3>
-          <a href="#" class="link-more">Voir tout →</a>
+          <h3 id="eventsTitle">📅 Prochains événements de l'équipe</h3>
+          <a href="#" class="link-more">Planning complet →</a>
         </div>
-        <div class="ev-list">
+        <div class="ev-list" id="eventsList">
           <div class="ev-row">
             <div class="ev-date"><div class="d">30</div><div class="m">Mai</div></div>
-            <div class="ev-info"><strong>Wine tasting</strong><span>La Cave · 19:00</span></div>
+            <div class="ev-info"><strong>Wine tasting</strong><span>La Cave · 19:00 · 3 membres</span></div>
             <div class="ev-guests">24 invités</div>
           </div>
           <div class="ev-row">
             <div class="ev-date"><div class="d">02</div><div class="m">Juin</div></div>
-            <div class="ev-info"><strong>Cooking workshop</strong><span>Atelier · 18:30</span></div>
+            <div class="ev-info"><strong>Cooking workshop</strong><span>Atelier · 18:30 · 2 membres</span></div>
             <div class="ev-guests">18 invités</div>
           </div>
           <div class="ev-row">
             <div class="ev-date"><div class="d">07</div><div class="m">Juin</div></div>
-            <div class="ev-info"><strong>Speed dating</strong><span>Le Loft · 20:00</span></div>
+            <div class="ev-info"><strong>Speed dating</strong><span>Le Loft · 20:00 · 4 membres</span></div>
             <div class="ev-guests">32 invités</div>
           </div>
         </div>
@@ -1006,13 +1006,13 @@
       <!-- Activity -->
       <div class="card card-activity">
         <div class="card-head">
-          <h3>⚡ Activité récente</h3>
+          <h3 id="activityTitle">⚡ Activité de l'équipe</h3>
           <a href="#" class="link-more">Tout voir →</a>
         </div>
-        <div class="act-list">
+        <div class="act-list" id="activityList">
           <div class="act-row">
             <span class="act-dot"></span>
-            <span>Nouvelle request — <strong>Studio Loft</strong></span>
+            <span><strong>Julien</strong> s'est positionné sur Wine tasting (30/05)</span>
             <span class="act-time">il y a 12m</span>
           </div>
           <div class="act-row">
@@ -1022,34 +1022,34 @@
           </div>
           <div class="act-row">
             <span class="act-dot amber"></span>
-            <span>Partenaire approuvé — <strong>Chez Marie</strong></span>
+            <span><strong>Marie</strong> a soumis sa disponibilité juin</span>
             <span class="act-time">il y a 3h</span>
           </div>
           <div class="act-row">
             <span class="act-dot rose"></span>
-            <span>Remboursement traité — <strong>€120</strong></span>
+            <span>Salaires Mai validés par le comptable</span>
             <span class="act-time">hier</span>
           </div>
         </div>
       </div>
 
-      <!-- Priority -->
+      <!-- Priority / To-do -->
       <div class="card card-priority">
         <div class="card-head">
-          <h3>🎯 Requests prioritaires</h3>
-          <a href="#" class="link-more">Toutes les requests →</a>
+          <h3 id="priorityTitle">🎯 À traiter en priorité</h3>
+          <a href="#" class="link-more">Tout voir →</a>
         </div>
-        <div class="pr-list">
+        <div class="pr-list" id="priorityList">
           <div class="pr-row">
             <span class="pr-id">#REQ-042</span>
-            <span>Mise à jour catering nécessaire pour l'événement du 30/05</span>
-            <span class="pill-priority high">Haute</span>
+            <span>Valider le catering pour l'événement du 30/05</span>
+            <span class="pill-priority high">Urgent</span>
             <span class="pr-age">2 jours</span>
           </div>
           <div class="pr-row">
             <span class="pr-id">#REQ-039</span>
-            <span>Confirmation de venue pour Speed Dating</span>
-            <span class="pill-priority high">Haute</span>
+            <span>Confirmer la venue pour Speed Dating du 07/06</span>
+            <span class="pill-priority high">Urgent</span>
             <span class="pr-age">5 jours</span>
           </div>
         </div>
@@ -1067,39 +1067,51 @@
 </div>
 
 <script>
-  // Role definitions
+  // Role definitions (équipe interne Crush.lu)
   const ROLES = {
-    admin: {
-      name: "Admin",
-      badge: "🌟 Admin · Accès complet",
-      modules: ["dashboard", "requests", "resources", "locations", "accounting", "partnership", "calculator", "settings"],
+    founder: {
+      name: "Fondateur",
+      badge: "🌟 Fondateur · Accès complet",
+      modules: ["dashboard", "planning", "team", "requests", "locations", "accounting", "payroll", "calculator", "settings"],
       showRevenue: true,
       welcome: "Bonsoir, Sébastien.",
-      avatar: "S"
+      avatar: "S",
+      eventsTitle: "📅 Prochains événements de l'équipe",
+      activityTitle: "⚡ Activité de l'équipe",
+      priorityTitle: "🎯 À traiter en priorité"
     },
-    staff: {
-      name: "Staff",
-      badge: "👥 Staff · Opérations",
-      modules: ["dashboard", "requests", "resources", "locations", "calculator"],
-      showRevenue: false,
-      welcome: "Bonsoir, Marie.",
-      avatar: "M"
-    },
-    partner: {
-      name: "Partner",
-      badge: "🏛 Partner · La Cave",
-      modules: ["locations", "calculator", "partnership"],
+    cofounder: {
+      name: "Co-fondateur",
+      badge: "✨ Co-fondateur · Accès complet",
+      modules: ["dashboard", "planning", "team", "requests", "locations", "accounting", "payroll", "calculator", "settings"],
       showRevenue: true,
-      welcome: "Bonsoir, Julien.",
-      avatar: "J"
+      welcome: "Bonsoir, Romain.",
+      avatar: "R",
+      eventsTitle: "📅 Prochains événements de l'équipe",
+      activityTitle: "⚡ Activité de l'équipe",
+      priorityTitle: "🎯 À traiter en priorité"
     },
-    client: {
-      name: "Client",
-      badge: "👤 Client · ACME Corp",
-      modules: ["dashboard", "requests", "resources"],
+    accountant: {
+      name: "Comptable",
+      badge: "📊 Comptable · Finances",
+      modules: ["dashboard", "accounting", "payroll", "calculator"],
+      showRevenue: true,
+      welcome: "Bonjour, Claire.",
+      avatar: "C",
+      eventsTitle: "📅 Événements à facturer",
+      activityTitle: "⚡ Activité financière",
+      priorityTitle: "🎯 Factures & paiements à traiter"
+    },
+    employee: {
+      name: "Employé",
+      badge: "👤 Employé · Mon espace",
+      modules: ["dashboard", "planning", "requests"],
       showRevenue: false,
-      welcome: "Bonsoir, Alice.",
-      avatar: "A"
+      welcome: "Bonsoir, Julien.",
+      avatar: "J",
+      eventsTitle: "📅 Mes prochains shifts",
+      activityTitle: "⚡ Mon activité",
+      priorityTitle: "🎯 Demandes & disponibilités à confirmer"
     }
   };
 
@@ -1170,7 +1182,12 @@
       }
     });
     document.getElementById("accessVisible").textContent =
-      `${visible} modules · adapté à votre rôle`;
+      `${visible} module${visible > 1 ? 's' : ''} · adaptés à votre poste`;
+
+    // Section titles
+    document.getElementById("eventsTitle").textContent = r.eventsTitle;
+    document.getElementById("activityTitle").textContent = r.activityTitle;
+    document.getElementById("priorityTitle").textContent = r.priorityTitle;
 
     // Menu active state
     document.querySelectorAll(".menu-item.active").forEach((m) => m.classList.remove("active"));
