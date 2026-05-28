@@ -3,17 +3,40 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
-  { href: "/", label: "Overview" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/requests", label: "Requests" },
-  { href: "/resources", label: "Resources" },
-  { href: "/locations", label: "Locations" },
-  { href: "/accounting", label: "Accounting" },
-  { href: "/whatsapp", label: "WhatsApp" },
-  { href: "/partnership-admin", label: "Partnership" },
-  { href: "/calculator", label: "Events Calculator" },
-  { href: "/settings", label: "Settings" },
+type NavItem = { href: string; label: string; icon: string };
+type NavSection = { title: string; items: NavItem[] };
+
+const navSections: NavSection[] = [
+  {
+    title: "Pilotage",
+    items: [
+      { href: "/dashboard", label: "Tableau de bord", icon: "📊" },
+      { href: "/planning", label: "Planning", icon: "🗓️" },
+      { href: "/team", label: "Équipe", icon: "👥" },
+      { href: "/requests", label: "Demandes", icon: "📋" },
+    ],
+  },
+  {
+    title: "Opérations",
+    items: [
+      { href: "/locations", label: "Lieux", icon: "📍" },
+      { href: "/resources", label: "Ressources", icon: "📁" },
+      { href: "/calculator", label: "Calculator", icon: "🎟️" },
+    ],
+  },
+  {
+    title: "Finances",
+    items: [
+      { href: "/accounting", label: "Comptabilité", icon: "💰" },
+      { href: "/accounting?tab=payroll", label: "Salaires", icon: "💼" },
+    ],
+  },
+  {
+    title: "Compte",
+    items: [
+      { href: "/settings", label: "Paramètres", icon: "⚙️" },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -22,33 +45,43 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand-block">
-        <div className="brand-mark">C</div>
-        <div className="brand-copy">
-          <h1>Crush Hub</h1>
-          <p>Frontend-first customer portal</p>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>
+          <div className="brand-mark">◆</div>
+          <div className="brand-copy">
+            <h1>Crush Hub</h1>
+            <p>Espace équipe</p>
+          </div>
         </div>
+
         <nav className="nav-list" aria-label="Primary">
-          {navItems.map((item) => {
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`nav-link${active ? " active" : ""}`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+          {navSections.map((section) => (
+            <div key={section.title}>
+              <div className="nav-section">{section.title}</div>
+              {section.items.map((item) => {
+                const active =
+                  pathname === item.href ||
+                  (item.href.includes("?")
+                    ? pathname === item.href.split("?")[0]
+                    : false);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`nav-link${active ? " active" : ""}`}
+                  >
+                    <span style={{ fontSize: "1.05rem" }}>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
       </div>
 
       <div className="sidebar-foot">
-        <strong>Django later</strong>
-        <p>
-          The UI is already structured around account, request, and resource
-          endpoints so the backend can be attached without redesigning the app.
-        </p>
+        <strong>🔒 Session sécurisée</strong>
+        <p>Identifiez-vous via Crush.lu pour synchroniser vos données.</p>
       </div>
     </aside>
   );
