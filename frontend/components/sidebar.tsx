@@ -55,7 +55,7 @@ export function Sidebar() {
 
         <nav className="nav-list" aria-label="Primary">
           {navSections.map((section) => (
-            <div key={section.title}>
+            <div key={section.title} className="nav-section-group">
               <div className="nav-section">{section.title}</div>
               {section.items.map((item) => {
                 const active =
@@ -79,9 +79,15 @@ export function Sidebar() {
         </nav>
       </div>
 
-      <div className="sidebar-foot">
-        <strong>🔒 Session sécurisée</strong>
-        <p>Identifiez-vous via Crush.lu pour synchroniser vos données.</p>
+      <div>
+        <Link href="/legacy" className="nav-link" style={{ marginBottom: "0.75rem" }}>
+          <span style={{ fontSize: "1.05rem" }}>↩</span>
+          <span>Version d'origine</span>
+        </Link>
+        <div className="sidebar-foot">
+          <strong>🔒 Session sécurisée</strong>
+          <p>Identifiez-vous via Crush.lu pour synchroniser vos données.</p>
+        </div>
       </div>
     </aside>
   );

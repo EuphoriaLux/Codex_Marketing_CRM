@@ -151,11 +151,29 @@ textarea {
 
 .nav-list {
   display: grid;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-top: 1rem;
 }
 
+.nav-section-group {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.nav-section {
+  padding: 0.7rem 0.6rem 0.3rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
   padding: 0.9rem 1rem;
   border: 1px solid transparent;
   border-radius: 18px;
