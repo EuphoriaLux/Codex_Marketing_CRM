@@ -13,7 +13,7 @@ import { HubProvider } from "@/lib/hub-provider";
 const PUBLIC_FRAME_ROUTES = ["/partnership"];
 
 // Routes that render full-screen (no shell, no public chrome, no auth required).
-const FULL_SCREEN_ROUTES = new Set(["/"]);
+const FULL_SCREEN_ROUTES = new Set<string>([]);
 
 // Routes that render in the standard Shell but don't require a logged-in user.
 const AUTH_OPEN_ROUTES = new Set(["/login", "/auth/callback", "/legacy"]);
