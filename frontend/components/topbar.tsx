@@ -3,35 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { clearTokens } from "@/lib/api/client";
-
-type RoleKey = "founder" | "cofounder" | "accountant" | "employee";
-
-type RoleProfile = {
-  name: string;
-  role: string;
-  avatar: string;
-};
-
-const ROLE_PROFILES: Record<RoleKey, RoleProfile> = {
-  founder:    { name: "Sébastien", role: "Fondateur",    avatar: "S" },
-  cofounder:  { name: "Wesley",    role: "Co-fondateur", avatar: "W" },
-  accountant: { name: "Claire",    role: "Comptable",    avatar: "C" },
-  employee:   { name: "Julien",    role: "Employé",      avatar: "J" },
-};
-
-const STORAGE_KEY = "crush_dev_role";
+import { logout } from "@/lib/api/client";
+import { useHubData } from "@/lib/hub-provider";
 
 export function Topbar() {
   const router = useRouter();
-  const [roleKey, setRoleKey] = useState<RoleKey>("founder");
+  const { customer } = useHubData();
   const [open, setOpen] = useState(false);
   const chipRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored && stored in ROLE_PROFILES) setRoleKey(stored as RoleKey);
-  }, []);
+  const displayName = customer.primaryContact || customer.email || "—";
+  const avatarLetter = displayName.charAt(0).toUpperCase() || "?";
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -43,19 +25,11 @@ export function Topbar() {
     return () => document.removeEventListener("click", onClickOutside);
   }, []);
 
-  function pickRole(next: RoleKey) {
-    setRoleKey(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+  async function handleLogout() {
     setOpen(false);
+    await logout();
+    router.replace("/login");
   }
-
-  function handleLogout() {
-    clearTokens();
-    setOpen(false);
-    router.replace("/");
-  }
-
-  const profile = ROLE_PROFILES[roleKey];
 
   return (
     <header className="topbar">
@@ -75,10 +49,10 @@ export function Topbar() {
           ref={chipRef}
           onClick={() => setOpen((v) => !v)}
         >
-          <div className="avatar-circle">{profile.avatar}</div>
+          <div className="avatar-circle">{avatarLetter}</div>
           <div>
-            <div className="user-name">{profile.name}</div>
-            <div className="user-role">{profile.role}</div>
+            <div className="user-name">{displayName}</div>
+            <div className="user-role">{customer.organization || "Crush Hub"}</div>
           </div>
           <span className="chev">▾</span>
 
@@ -90,23 +64,6 @@ export function Topbar() {
               <Link href="/settings" className="menu-item">
                 <span>⚙</span> Paramètres
               </Link>
-
-              <div className="menu-divider" />
-              <div className="menu-section">
-                🧪 Voir comme
-                <span className="dev-chip">DEV</span>
-              </div>
-              {(Object.keys(ROLE_PROFILES) as RoleKey[]).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`menu-item${roleKey === key ? " active" : ""}`}
-                  onClick={() => pickRole(key)}
-                >
-                  <span className="role-radio" />
-                  {ROLE_PROFILES[key].role}
-                </button>
-              ))}
 
               <div className="menu-divider" />
               <button type="button" className="menu-item" onClick={handleLogout}>

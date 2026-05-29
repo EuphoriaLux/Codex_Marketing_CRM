@@ -2,6 +2,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? (
   process.env.NODE_ENV === "development" ? "http://localhost:8000" : null
 );
 
+// Crush.lu base URL — used only for SSO initiation (/api/auth/spa-callback/).
+// That endpoint lives on crush.lu's urlconf (allauth sessions), not api.crush.lu.
+const CRUSH_BASE_URL = process.env.NEXT_PUBLIC_CRUSH_BASE_URL ?? (
+  process.env.NODE_ENV === "development" ? "http://localhost:8000" : null
+);
+
 const ACCESS_KEY = "hub_access_token";
 const REFRESH_KEY = "hub_refresh_token";
 
@@ -100,10 +106,12 @@ export async function exchangeCode(code: string): Promise<void> {
 // `${window.location.origin}/auth/callback` — for production that resolves
 // to https://hub.crush.lu/auth/callback (whitelisted), for local dev to
 // http://localhost:3000/auth/callback (also whitelisted under DEBUG).
+// NOTE: uses CRUSH_BASE_URL (crush.lu), NOT API_BASE_URL (api.crush.lu) —
+// spa-callback lives on crush.lu's urlconf where allauth sessions are.
 export function buildSsoUrl(): string | null {
-  if (!API_BASE_URL || typeof window === "undefined") return null;
+  if (!CRUSH_BASE_URL || typeof window === "undefined") return null;
   const callback = `${window.location.origin}/auth/callback`;
-  return `${API_BASE_URL}/api/auth/spa-callback/?return=${encodeURIComponent(callback)}`;
+  return `${CRUSH_BASE_URL}/api/auth/spa-callback/?return=${encodeURIComponent(callback)}`;
 }
 
 export async function logout(): Promise<void> {
