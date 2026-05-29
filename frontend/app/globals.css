@@ -1854,3 +1854,41 @@ body:has(.shell.theme-dark) {
   box-shadow: var(--shadow);
 }
 
+/* --- Dark polish: dashboard / requests --- */
+
+/* item-card small (status label) */
+.shell.theme-dark .item-card small,
+.shell.theme-dark .resource-card small,
+.shell.theme-dark .timeline-item small { color: var(--muted-2); }
+
+/* timeline date column */
+.shell.theme-dark .timeline-item > span { color: var(--muted); }
+
+/* sortable th hover */
+.shell.theme-dark .table th.sortable:hover { color: var(--indigo-2); }
+
+/* --- Dark polish: locations drawer --- */
+
+.shell.theme-dark .drawer-overlay { background: rgba(0, 0, 0, 0.65); }
+.shell.theme-dark .contact-line a  { color: var(--indigo-2); }
+
+/* --- Dark polish: accounting --- */
+
+.shell.theme-dark .margin-positive     { color: #6ee7b7; }
+.shell.theme-dark .margin-negative     { color: #fda4af; }
+.shell.theme-dark .salary-bar-net      { background: #34d399; }
+.shell.theme-dark .salary-bar-charges  { background: #fbbf24; }
+
+.shell.theme-dark .timeline-legend-dot.in      { background: #6ee7b7; }
+.shell.theme-dark .timeline-legend-dot.out     { background: #fda4af; }
+.shell.theme-dark .timeline-legend-dot.payroll { background: #fcd34d; }
+
+/* cashflow chart SVG */
+.shell.theme-dark .cashflow-chart-wrap text          { fill: #9ca3af; }
+.shell.theme-dark .cashflow-chart-wrap .grid-line    { stroke: rgba(255, 255, 255, 0.07); }
+.shell.theme-dark .cashflow-chart-wrap .zero-line    { stroke: rgba(255, 255, 255, 0.18); }
+.shell.theme-dark .cashflow-chart-wrap .cashflow-line{ stroke: var(--indigo-2); }
+.shell.theme-dark .cashflow-chart-wrap .area-positive{ fill: rgba(16, 185, 129, 0.15); }
+.shell.theme-dark .cashflow-chart-wrap .area-negative{ fill: rgba(244, 63, 94, 0.15); }
+.shell.theme-dark .cashflow-chart-wrap .tick-line    { stroke: rgba(255, 255, 255, 0.07); }
+
