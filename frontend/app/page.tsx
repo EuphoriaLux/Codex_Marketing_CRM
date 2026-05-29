@@ -33,8 +33,8 @@ const ROLES: Record<RoleKey, RoleDef> = {
   cofounder: {
     name: "Co-fondateur",
     badge: "✨ Co-fondateur · Accès complet",
-    welcome: "Bonsoir, Romain.",
-    avatar: "R",
+    welcome: "Bonsoir, Wesley.",
+    avatar: "W",
     modules: ["dashboard", "planning", "team", "requests", "locations", "accounting", "payroll", "calculator", "settings"],
     showRevenue: true,
     eventsTitle: "📅 Prochains événements de l'équipe",
