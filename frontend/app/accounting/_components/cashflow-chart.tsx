@@ -121,6 +121,7 @@ export function CashflowChart({ points, width = 880, height = 260 }: Props) {
         {ticksY.map((v) => (
           <g key={v}>
             <line
+              className={v === 0 ? "zero-line" : "grid-line"}
               x1={PADDING.left}
               x2={width - PADDING.right}
               y1={yAt(v)}
@@ -142,17 +143,20 @@ export function CashflowChart({ points, width = 880, height = 260 }: Props) {
         ))}
 
         <path
+          className="area-positive"
           d={areaPath}
           fill="rgba(45, 107, 70, 0.18)"
           clipPath="url(#cashflow-clip-positive)"
         />
         <path
+          className="area-negative"
           d={areaPath}
           fill="rgba(163, 21, 21, 0.18)"
           clipPath="url(#cashflow-clip-negative)"
         />
 
         <path
+          className="cashflow-line"
           d={linePath}
           fill="none"
           stroke="#1e293b"
@@ -164,6 +168,7 @@ export function CashflowChart({ points, width = 880, height = 260 }: Props) {
         {ticksX.map(({ p, i }) => (
           <g key={p.dateISO}>
             <line
+              className="tick-line"
               x1={xAt(i)}
               x2={xAt(i)}
               y1={height - PADDING.bottom}
