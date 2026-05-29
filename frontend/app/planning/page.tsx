@@ -27,7 +27,7 @@ const DAYS = [
     today: false,
     shifts: [
       { type: "event", who: "🍷 Wine tasting", info: "19h–23h · La Cave" },
-      { type: "work", who: "Sébastien · Romain", info: "19h–23h" },
+      { type: "work", who: "Sébastien · Wesley", info: "19h–23h" },
     ],
   },
   { label: "Sam 31", today: false, shifts: [{ type: "off", who: "—", info: "Aucun shift" }] },
