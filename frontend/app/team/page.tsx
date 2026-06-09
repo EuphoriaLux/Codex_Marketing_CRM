@@ -12,7 +12,8 @@ type TeamMember = {
 };
 
 const MEMBERS: TeamMember[] = [
-  { name: "Tom", role: "Fondateur", initial: "T", gradient: "linear-gradient(135deg, #6366f1, #ec4899)", events: "—", presence: "—" },
+  { name: "Tom",    role: "Fondateur",    initial: "T", gradient: "linear-gradient(135deg, #6366f1, #ec4899)", events: "—", presence: "—" },
+  { name: "Wesley", role: "Co-fondateur", initial: "W", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", events: "—", presence: "—" },
 ];
 
 export default function TeamPage() {
