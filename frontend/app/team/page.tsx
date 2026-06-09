@@ -12,11 +12,8 @@ type TeamMember = {
 };
 
 const MEMBERS: TeamMember[] = [
-  { name: "Sébastien", role: "Fondateur · CEO",     initial: "S", gradient: "linear-gradient(135deg, #6366f1, #ec4899)", events: 14,  presence: "92%" },
-  { name: "Wesley",    role: "Co-fondateur · COO",  initial: "W", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", events: 11,  presence: "88%" },
-  { name: "Claire",    role: "Comptable",           initial: "C", gradient: "linear-gradient(135deg, #10b981, #06b6d4)", events: "—", presence: "100%" },
-  { name: "Marie",     role: "Employée · Events",   initial: "M", gradient: "linear-gradient(135deg, #f59e0b, #ec4899)", events: 9,   presence: "96%" },
-  { name: "Julien",    role: "Employé · Logistique",initial: "J", gradient: "linear-gradient(135deg, #06b6d4, #6366f1)", events: 12,  presence: "94%" },
+  { name: "Tom",    role: "Fondateur",    initial: "T", gradient: "linear-gradient(135deg, #6366f1, #ec4899)", events: "—", presence: "—" },
+  { name: "Wesley", role: "Co-fondateur", initial: "W", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", events: "—", presence: "—" },
 ];
 
 export default function TeamPage() {
