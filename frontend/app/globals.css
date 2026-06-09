@@ -494,6 +494,112 @@ textarea {
   color: var(--muted);
 }
 
+.news-remove {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.news-remove:hover {
+  color: #b91c1c;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+/* Devlog / announcements forms */
+.devlog-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1.2rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.devlog-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .devlog-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.devlog-field {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.devlog-field span {
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+}
+
+.devlog-field input[type="text"],
+.devlog-field input[type="date"],
+.devlog-field input[type="file"],
+.devlog-field select,
+.devlog-field textarea {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+}
+
+.devlog-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.devlog-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.devlog-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.announcement-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent-deep, #1d4ed8);
+  font-size: 0.85rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.announcement-pdf:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.announcement-pdf small {
+  color: var(--muted);
+  font-weight: 500;
+}
+
 /* Accounting page */
 .accounting-toolbar {
   display: grid;
@@ -1760,6 +1866,35 @@ body:has(.shell.theme-dark) {
 .shell.theme-dark .news-category.feature      { background: rgba(16,185,129,0.18); color: #6ee7b7; }
 .shell.theme-dark .news-category.meeting      { background: rgba(245,158,11,0.18); color: #fcd34d; }
 .shell.theme-dark .news-category.announcement { background: rgba(129,140,248,0.18); color: #c7d2fe; }
+
+.shell.theme-dark .devlog-form {
+  background: var(--glass);
+  border-color: var(--line);
+}
+
+.shell.theme-dark .devlog-field input[type="text"],
+.shell.theme-dark .devlog-field input[type="date"],
+.shell.theme-dark .devlog-field input[type="file"],
+.shell.theme-dark .devlog-field select,
+.shell.theme-dark .devlog-field textarea {
+  background: var(--glass);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.shell.theme-dark .devlog-field span { color: var(--muted); }
+
+.shell.theme-dark .announcement-pdf {
+  background: rgba(129, 140, 248, 0.18);
+  color: #c7d2fe;
+}
+
+.shell.theme-dark .announcement-pdf small { color: var(--muted); }
+
+.shell.theme-dark .news-remove:hover {
+  background: rgba(244, 63, 94, 0.18);
+  color: #fda4af;
+}
 
 /* Pills */
 .shell.theme-dark .pill.high     { background: rgba(244,63,94,0.18);  color: #fda4af; }

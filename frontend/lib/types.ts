@@ -41,6 +41,18 @@ export type NewsItem = {
   description: string;
 };
 
+export type AnnouncementItem = {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  pdf?: {
+    name: string;
+    dataUrl: string;
+    size: number;
+  };
+};
+
 export type CustomerSnapshot = {
   organization: string;
   primaryContact: string;

@@ -21,6 +21,7 @@ const navSections: NavSection[] = [
     items: [
       { href: "/locations", label: "Lieux", icon: "📍" },
       { href: "/resources", label: "Ressources", icon: "📁" },
+      { href: "/publications", label: "Publications", icon: "📢" },
       { href: "/calculator", label: "Calculator", icon: "🎟️" },
     ],
   },
