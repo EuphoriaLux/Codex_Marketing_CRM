@@ -27,6 +27,20 @@ export type TimelineEvent = {
   description: string;
 };
 
+export type NewsCategory =
+  | "Update"
+  | "Feature"
+  | "Meeting"
+  | "Announcement";
+
+export type NewsItem = {
+  id: string;
+  date: string;
+  category: NewsCategory;
+  title: string;
+  description: string;
+};
+
 export type CustomerSnapshot = {
   organization: string;
   primaryContact: string;

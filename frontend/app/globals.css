@@ -427,6 +427,73 @@ textarea {
   grid-template-columns: 120px minmax(0, 1fr);
 }
 
+/* News feed (dashboard "Latest updates") */
+.news-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.news-item {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.news-item h3 {
+  margin: 0.4rem 0 0;
+}
+
+.news-item p {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+}
+
+.news-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.news-category {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.news-category.update {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.news-category.feature {
+  background: #dcefdc;
+  color: #2d6b46;
+}
+
+.news-category.meeting {
+  background: #ffe8b8;
+  color: #8f6200;
+}
+
+.news-category.announcement {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.news-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
 /* Accounting page */
 .accounting-toolbar {
   display: grid;
@@ -1675,15 +1742,24 @@ body:has(.shell.theme-dark) {
 /* Item / resource / timeline cards */
 .shell.theme-dark .item-card,
 .shell.theme-dark .resource-card,
-.shell.theme-dark .timeline-item {
+.shell.theme-dark .timeline-item,
+.shell.theme-dark .news-item {
   background: var(--glass);
   border-color: var(--line);
   color: var(--text);
 }
 .shell.theme-dark .item-card p,
 .shell.theme-dark .resource-card p,
-.shell.theme-dark .timeline-item p { color: var(--muted); }
+.shell.theme-dark .timeline-item p,
+.shell.theme-dark .news-item p { color: var(--muted); }
 .shell.theme-dark .resource-type { color: var(--indigo-2); }
+.shell.theme-dark .news-item-meta { color: var(--muted); }
+.shell.theme-dark .news-empty { color: var(--muted); }
+
+.shell.theme-dark .news-category.update       { background: rgba(99,102,241,0.18); color: var(--indigo-2); }
+.shell.theme-dark .news-category.feature      { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+.shell.theme-dark .news-category.meeting      { background: rgba(245,158,11,0.18); color: #fcd34d; }
+.shell.theme-dark .news-category.announcement { background: rgba(129,140,248,0.18); color: #c7d2fe; }
 
 /* Pills */
 .shell.theme-dark .pill.high     { background: rgba(244,63,94,0.18);  color: #fda4af; }

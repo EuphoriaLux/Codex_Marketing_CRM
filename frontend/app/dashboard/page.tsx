@@ -3,7 +3,9 @@
 import { Panel } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
 import { HeroStats } from "@/components/hero-stats";
+import { NewsFeed } from "@/components/news-feed";
 import { StatusBanner } from "@/components/status-banner";
+import { newsItems } from "@/lib/data/news";
 import { useHubData } from "@/lib/hub-provider";
 
 export default function DashboardPage() {
@@ -19,6 +21,13 @@ export default function DashboardPage() {
       />
 
       <HeroStats metrics={metrics} />
+
+      <Panel
+        title="Latest updates"
+        description="Site changes, new features and meeting recaps."
+      >
+        <NewsFeed items={newsItems} />
+      </Panel>
 
       <section className="dashboard-grid">
         <Panel title="Recent requests" description="Most active account conversations.">
