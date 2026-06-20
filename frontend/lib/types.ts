@@ -224,3 +224,49 @@ export type WhatsAppMessage = {
   status_history: WhatsAppStatusEvent[];
   created_at: string;
 };
+
+// Social media planning — a draft → review → schedule workflow that feeds an
+// off-the-shelf scheduler (Buffer) via the Django backend. Modeled on the
+// WhatsAppMessage shape: a status field plus an append-only status_history.
+export type SocialPillar =
+  | "event_recap"
+  | "dating_tip"
+  | "milestone"
+  | "community"
+  | "promo";
+
+export type SocialLanguage = "fr" | "en" | "de";
+
+export type SocialPlatform = "instagram" | "facebook" | "linkedin";
+
+export type SocialPostStatus =
+  | "draft"
+  | "pending_review"
+  | "approved"
+  | "scheduled"
+  | "published"
+  | "failed";
+
+export type SocialStatusEvent = {
+  status: SocialPostStatus;
+  timestamp: string;
+  actor?: string;
+  note?: string;
+};
+
+export type SocialPost = {
+  id: string;
+  created_by: string;
+  pillar: SocialPillar;
+  language: SocialLanguage;
+  platforms: SocialPlatform[];
+  hook: string;
+  content: string;
+  media_url: string | null;
+  status: SocialPostStatus;
+  scheduled_for: string | null;
+  buffer_id: string | null;
+  status_history: SocialStatusEvent[];
+  created_at: string;
+  updated_at: string;
+};

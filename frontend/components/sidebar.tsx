@@ -22,6 +22,7 @@ const navSections: NavSection[] = [
       { href: "/locations", label: "Lieux", icon: "📍" },
       { href: "/resources", label: "Ressources", icon: "📁" },
       { href: "/publications", label: "Publications", icon: "📢" },
+      { href: "/social", label: "Réseaux sociaux", icon: "📣" },
       { href: "/calculator", label: "Calculator", icon: "🎟️" },
     ],
   },
