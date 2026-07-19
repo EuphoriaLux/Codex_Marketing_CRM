@@ -1,5 +1,6 @@
 import { apiGet, apiPost } from "@/lib/api/client";
 import {
+  WhatsAppInboxResponse,
   WhatsAppMessagesResponse,
   WhatsAppSendResponse,
   WhatsAppTemplatesResponse,
@@ -21,4 +22,16 @@ export function sendWhatsAppMessage(payload: {
   parameters: Record<string, string>;
 }) {
   return apiPost<WhatsAppSendResponse>("/hub/whatsapp/send", payload);
+}
+
+export function listWhatsAppInbox(since?: string, unreadOnly?: boolean) {
+  const params = new URLSearchParams();
+  if (since) params.append("since", since);
+  if (unreadOnly) params.append("unread", "1");
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  return apiGet<WhatsAppInboxResponse>(`/hub/whatsapp/inbox${qs}`);
+}
+
+export function markWhatsAppInboxRead(ids?: string[], all?: boolean) {
+  return apiPost<{ updated: number }>("/hub/whatsapp/inbox/read", { ids, all });
 }

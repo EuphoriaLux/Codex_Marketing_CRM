@@ -270,3 +270,14 @@ export type SocialPost = {
   created_at: string;
   updated_at: string;
 };
+
+export type WhatsAppInboundMessage = {
+  id: string;
+  wa_message_id: string;
+  from_number: string;
+  contact_name: string;
+  message_type: string;
+  text: string;
+  received_at: string;
+  is_read: boolean;
+};

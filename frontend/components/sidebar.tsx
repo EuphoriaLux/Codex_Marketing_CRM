@@ -23,6 +23,8 @@ const navSections: NavSection[] = [
       { href: "/resources", label: "Ressources", icon: "📁" },
       { href: "/publications", label: "Publications", icon: "📢" },
       { href: "/social", label: "Réseaux sociaux", icon: "📣" },
+      { href: "/whatsapp", label: "WhatsApp", icon: "💬" },
+      { href: "/partnership-admin", label: "Partenariat", icon: "🤝" },
       { href: "/calculator", label: "Calculator", icon: "🎟️" },
     ],
   },

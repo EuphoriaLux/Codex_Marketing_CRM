@@ -3,6 +3,7 @@ import {
   RequestItem,
   ResourceItem,
   SocialPost,
+  WhatsAppInboundMessage,
   WhatsAppMessage,
   WhatsAppTemplate,
 } from "@/lib/types";
@@ -36,3 +37,8 @@ export type SocialPostsResponse = { items: SocialPost[] };
 export type SocialPostResponse = { post: SocialPost };
 // POST /hub/social/generate returns one draft per requested language.
 export type SocialGenerateResponse = { posts: SocialPost[] };
+
+export type WhatsAppInboxResponse = {
+  items: WhatsAppInboundMessage[];
+  unread_count: number;
+};
