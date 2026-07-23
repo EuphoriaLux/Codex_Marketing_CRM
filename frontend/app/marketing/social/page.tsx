@@ -8,7 +8,10 @@ import {
   expandPostToArticle,
   generateDrafts,
   listBufferProfiles,
+  listFeaturedProfiles,
+  listKpisSummary,
   listSocialPosts,
+  listUpcomingEvents,
   updateSocialPost,
 } from "@/lib/api/social";
 import {
@@ -149,18 +152,37 @@ export default function MarketingSocialPage() {
     }
   }, []);
 
+  // Category specific state
+  const [upcomingEvents, setUpcomingEvents] = useState<{ id: string; title: string; location: string; date: string }[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [featuredProfiles, setFeaturedProfiles] = useState<{ id: string; first_name: string; age: number; region: string; passions: string[]; bio_quote: string }[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+
   useEffect(() => {
     fetchFeed();
     listBufferProfiles()
       .then((res) => setBufferProfiles(res.items))
       .catch(() => {
-        // Fallback mock buffer profiles if backend endpoint is initializing
         setBufferProfiles([
           { id: "buf_ig_1", service: "instagram", service_username: "crush.lu", formatted_username: "Crush Luxembourg (IG)" },
           { id: "buf_fb_1", service: "facebook", service_username: "crushlu", formatted_username: "Crush Luxembourg (FB)" },
           { id: "buf_li_1", service: "linkedin", service_username: "crush-lu", formatted_username: "Crush Luxembourg (LinkedIn)" },
         ]);
       });
+
+    listUpcomingEvents()
+      .then((res) => {
+        setUpcomingEvents(res.items);
+        if (res.items.length > 0) setSelectedEventId(res.items[0].id);
+      })
+      .catch(() => {});
+
+    listFeaturedProfiles()
+      .then((res) => {
+        setFeaturedProfiles(res.items);
+        if (res.items.length > 0) setSelectedProfileId(res.items[0].id);
+      })
+      .catch(() => {});
   }, [fetchFeed]);
 
   // Poll when posts sit in live Buffer states
@@ -181,12 +203,15 @@ export default function MarketingSocialPage() {
     setSubmitting(true);
     setNotice(null);
     try {
+      const selectedProf = featuredProfiles.find((p) => p.id === selectedProfileId);
       const res = await generateDrafts({
         category: genCategory,
         hook: genHook,
         pillar: genPillar,
         platforms: genPlatforms,
         languages: genLangs,
+        event_id: selectedEventId,
+        profile: selectedProf,
       });
       setPosts((prev) => mergeById(prev, res.posts));
       setNotice({
@@ -339,6 +364,55 @@ export default function MarketingSocialPage() {
                   <option value="recaps">✨ Catégorie 5 : Récaps & Avis Événements passés</option>
                 </select>
               </div>
+
+              {genCategory === "events" && upcomingEvents.length > 0 && (
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.3rem", color: "#cbd5e1" }}>
+                    Événement à mettre en avant
+                  </label>
+                  <select
+                    className="input"
+                    value={selectedEventId}
+                    onChange={(e) => {
+                      setSelectedEventId(e.target.value);
+                      const evt = upcomingEvents.find((item) => item.id === e.target.value);
+                      if (evt) setGenHook(evt.title);
+                    }}
+                    style={{ width: "100%" }}
+                  >
+                    {upcomingEvents.map((evt) => (
+                      <option key={evt.id} value={evt.id}>
+                        {evt.title} ({evt.location})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {genCategory === "profiles" && featuredProfiles.length > 0 && (
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.3rem", color: "#cbd5e1" }}>
+                    Membre anonymisé à mettre en avant
+                  </label>
+                  <select
+                    className="input"
+                    value={selectedProfileId}
+                    onChange={(e) => {
+                      setSelectedProfileId(e.target.value);
+                      const prof = featuredProfiles.find((item) => item.id === e.target.value);
+                      if (prof) setGenHook(`Membre de la semaine: ${prof.first_name}, ${prof.age} ans`);
+                    }}
+                    style={{ width: "100%" }}
+                  >
+                    {featuredProfiles.map((prof) => (
+                      <option key={prof.id} value={prof.id}>
+                        {prof.first_name}, {prof.age} ans ({prof.region}) - {prof.passions.join(", ")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.3rem", color: "#cbd5e1" }}>
                   Accroche / Thème de la semaine
