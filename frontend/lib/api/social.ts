@@ -1,5 +1,7 @@
 import { apiGet, apiPatch, apiPost } from "@/lib/api/client";
 import {
+  BufferProfilesResponse,
+  ExpandArticleResponse,
   SocialGenerateResponse,
   SocialPostResponse,
   SocialPostsResponse,
@@ -22,6 +24,11 @@ export function listSocialPosts(status?: SocialPostStatus) {
   return apiGet<SocialPostsResponse>(`/hub/social/posts${qs}`);
 }
 
+// GET /hub/social/buffer-profiles — connected Buffer social accounts.
+export function listBufferProfiles() {
+  return apiGet<BufferProfilesResponse>("/hub/social/buffer-profiles");
+}
+
 // POST /hub/social/generate — Django calls the Claude API server-side and
 // returns one draft (status: "draft") per requested language.
 export function generateDrafts(payload: {
@@ -29,6 +36,7 @@ export function generateDrafts(payload: {
   pillar: SocialPillar;
   platforms: SocialPlatform[];
   languages: SocialLanguage[];
+  week_start?: string;
 }) {
   return apiPost<SocialGenerateResponse>("/hub/social/generate", payload);
 }
@@ -55,7 +63,13 @@ export function updateSocialPost(
     media_url: string | null;
     status: SocialPostStatus;
     scheduled_for: string | null;
+    buffer_profile_ids?: string[];
   }>,
 ) {
   return apiPatch<SocialPostResponse>(`/hub/social/posts/${id}`, payload);
+}
+
+// POST /hub/social/posts/:id/expand-article — expand social post into a long-form article draft.
+export function expandPostToArticle(id: string) {
+  return apiPost<ExpandArticleResponse>(`/hub/social/posts/${id}/expand-article`, {});
 }

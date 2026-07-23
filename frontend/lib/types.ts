@@ -254,18 +254,28 @@ export type SocialStatusEvent = {
   note?: string;
 };
 
+export type BufferProfile = {
+  id: string;
+  service: SocialPlatform;
+  service_username: string;
+  avatar_url?: string;
+  formatted_username: string;
+};
+
 export type SocialPost = {
   id: string;
   created_by: string;
   pillar: SocialPillar;
   language: SocialLanguage;
   platforms: SocialPlatform[];
+  buffer_profile_ids?: string[];
   hook: string;
   content: string;
   media_url: string | null;
   status: SocialPostStatus;
   scheduled_for: string | null;
   buffer_id: string | null;
+  article_id?: string | null;
   status_history: SocialStatusEvent[];
   created_at: string;
   updated_at: string;
