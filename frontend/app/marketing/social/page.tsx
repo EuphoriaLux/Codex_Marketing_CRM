@@ -122,6 +122,7 @@ export default function MarketingSocialPage() {
 
   // Generator Drawer state
   const [generatorOpen, setGeneratorOpen] = useState(false);
+  const [genCategory, setGenCategory] = useState<"events" | "kpis" | "profiles" | "tips" | "recaps">("events");
   const [genHook, setGenHook] = useState("Soirée rencontre Crush.lu & dégustation vins");
   const [genPillar, setGenPillar] = useState<SocialPillar>("event_recap");
   const [genPlatforms, setGenPlatforms] = useState<SocialPlatform[]>(["instagram", "facebook"]);
@@ -181,6 +182,7 @@ export default function MarketingSocialPage() {
     setNotice(null);
     try {
       const res = await generateDrafts({
+        category: genCategory,
         hook: genHook,
         pillar: genPillar,
         platforms: genPlatforms,
@@ -320,6 +322,23 @@ export default function MarketingSocialPage() {
             </p>
 
             <form onSubmit={handleGenerateBatch} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.3rem", color: "#cbd5e1" }}>
+                  Catégorie de publication
+                </label>
+                <select
+                  className="input"
+                  value={genCategory}
+                  onChange={(e) => setGenCategory(e.target.value as any)}
+                  style={{ width: "100%" }}
+                >
+                  <option value="events">🎉 Catégorie 1 : Événements à venir (Flyer + Booking)</option>
+                  <option value="kpis">📊 Catégorie 2 : Statistiques & KPIs (Nouveaux Inscrits, Matchs)</option>
+                  <option value="profiles">👤 Catégorie 3 : Profil Anonymisé (Membre de la semaine)</option>
+                  <option value="tips">💡 Catégorie 4 : Conseils Rencontre (Dating Tips)</option>
+                  <option value="recaps">✨ Catégorie 5 : Récaps & Avis Événements passés</option>
+                </select>
+              </div>
               <div>
                 <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.3rem", color: "#cbd5e1" }}>
                   Accroche / Thème de la semaine
