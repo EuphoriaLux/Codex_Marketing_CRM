@@ -36,7 +36,7 @@ export type WhatsAppSendResponse = { message: WhatsAppMessage };
 export type SocialPostsResponse = { items: SocialPost[] };
 export type SocialPostResponse = { post: SocialPost };
 // POST /hub/social/generate returns one draft per requested language.
-export type SocialGenerateResponse = { posts: SocialPost[] };
+export type SocialGenerateResponse = { posts: SocialPost[]; warnings?: string[] };
 export type BufferProfilesResponse = { items: import("@/lib/types").BufferProfile[] };
 export type ExpandArticleResponse = { article_id: string; title: string; content: string };
 

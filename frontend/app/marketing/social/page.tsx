@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { Panel } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
 import { StatusBanner } from "@/components/status-banner";
@@ -9,7 +10,6 @@ import {
   generateDrafts,
   listBufferProfiles,
   listFeaturedProfiles,
-  listKpisSummary,
   listSocialPosts,
   listUpcomingEvents,
   updateSocialPost,
@@ -119,6 +119,7 @@ export default function MarketingSocialPage() {
   const [activeTab, setActiveTab] = useState<"kanban" | "calendar">("kanban");
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([]);
+  const [bufferError, setBufferError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
@@ -155,19 +156,19 @@ export default function MarketingSocialPage() {
   // Category specific state
   const [upcomingEvents, setUpcomingEvents] = useState<{ id: string; title: string; location: string; date: string }[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>("");
-  const [featuredProfiles, setFeaturedProfiles] = useState<{ id: string; first_name: string; age: number; region: string; passions: string[]; bio_quote: string }[]>([]);
+  const [featuredProfiles, setFeaturedProfiles] = useState<{ id: string; first_name: string; age: string; region: string; passions: string[]; bio_quote: string }[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
 
   useEffect(() => {
     fetchFeed();
     listBufferProfiles()
-      .then((res) => setBufferProfiles(res.items))
-      .catch(() => {
-        setBufferProfiles([
-          { id: "buf_ig_1", service: "instagram", service_username: "crush.lu", formatted_username: "Crush Luxembourg (IG)" },
-          { id: "buf_fb_1", service: "facebook", service_username: "crushlu", formatted_username: "Crush Luxembourg (FB)" },
-          { id: "buf_li_1", service: "linkedin", service_username: "crush-lu", formatted_username: "Crush Luxembourg (LinkedIn)" },
-        ]);
+      .then((res) => {
+        setBufferProfiles(res.items);
+        setBufferError(null);
+      })
+      .catch((err) => {
+        setBufferProfiles([]);
+        setBufferError(err instanceof Error ? err.message : "Buffer n'est pas configuré");
       });
 
     listUpcomingEvents()
@@ -203,7 +204,6 @@ export default function MarketingSocialPage() {
     setSubmitting(true);
     setNotice(null);
     try {
-      const selectedProf = featuredProfiles.find((p) => p.id === selectedProfileId);
       const res = await generateDrafts({
         category: genCategory,
         hook: genHook,
@@ -211,12 +211,14 @@ export default function MarketingSocialPage() {
         platforms: genPlatforms,
         languages: genLangs,
         event_id: selectedEventId,
-        profile: selectedProf,
+        profile_id: genCategory === "profiles" ? selectedProfileId : undefined,
       });
       setPosts((prev) => mergeById(prev, res.posts));
       setNotice({
         kind: "success",
-        text: `${res.posts.length} publication(s) générée(s) par l'IA et ajoutée(s) aux brouillons !`,
+        text: res.warnings?.length
+          ? `${res.posts.length} publication(s) générée(s). ${res.warnings[0]}`
+          : `${res.posts.length} publication(s) générée(s) par l'IA et ajoutée(s) aux brouillons !`,
       });
       setGeneratorOpen(false);
     } catch (err) {
@@ -235,11 +237,20 @@ export default function MarketingSocialPage() {
       ? new Date(post.scheduled_for).toISOString().slice(0, 16)
       : new Date(nextFriday1600()).toISOString().slice(0, 16);
     setEditSchedule(dateVal);
-    setSelectedProfiles(post.buffer_profile_ids || bufferProfiles.map((p) => p.id));
+    const activeProfileIds = new Set(
+      bufferProfiles.filter((profile) => !profile.is_queue_paused).map((profile) => profile.id),
+    );
+    setSelectedProfiles(
+      (post.buffer_profile_ids || Array.from(activeProfileIds)).filter((id) => activeProfileIds.has(id)),
+    );
   }
 
   async function handleSaveAndSchedule(targetStatus: SocialPostStatus) {
     if (!editingPost) return;
+    if (targetStatus === "scheduled" && selectedProfiles.length === 0) {
+      setNotice({ kind: "error", text: "Sélectionnez au moins un compte Buffer avant de programmer." });
+      return;
+    }
     setSubmitting(true);
     setNotice(null);
     try {
@@ -265,6 +276,7 @@ export default function MarketingSocialPage() {
       setEditingPost(null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur lors de la mise à jour";
+      await fetchFeed();
       setNotice({ kind: "error", text: msg });
     } finally {
       setSubmitting(false);
@@ -548,7 +560,7 @@ export default function MarketingSocialPage() {
                 </p>
                 {editMediaUrl && (
                   <div style={{ marginTop: "0.5rem", borderRadius: "8px", overflow: "hidden", maxHeight: "150px" }}>
-                    <img src={editMediaUrl} alt="Aperçu visuel" style={{ width: "100%", height: "150px", objectFit: "cover" }} onError={(e) => (e.currentTarget.style.display = "none")} />
+                    <Image src={editMediaUrl} alt="Aperçu visuel" width={600} height={150} unoptimized style={{ width: "100%", height: "150px", objectFit: "cover" }} onError={(e) => (e.currentTarget.style.display = "none")} />
                   </div>
                 )}
               </div>
@@ -572,17 +584,23 @@ export default function MarketingSocialPage() {
                     Comptes Buffer cibles
                   </label>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                    {bufferProfiles.length === 0 && (
+                      <span style={{ fontSize: "0.8rem", color: "#fca5a5" }}>
+                        {bufferError || "Aucun compte Buffer compatible n'est disponible."}
+                      </span>
+                    )}
                     {bufferProfiles.map((bp) => (
                       <label key={bp.id} style={{ fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                         <input
                           type="checkbox"
                           checked={selectedProfiles.includes(bp.id)}
+                          disabled={bp.is_queue_paused}
                           onChange={(e) => {
                             if (e.target.checked) setSelectedProfiles([...selectedProfiles, bp.id]);
                             else setSelectedProfiles(selectedProfiles.filter((id) => id !== bp.id));
                           }}
                         />
-                        {bp.formatted_username}
+                        {bp.formatted_username}{bp.is_queue_paused ? " (file en pause)" : ""}
                       </label>
                     ))}
                   </div>
@@ -607,7 +625,7 @@ export default function MarketingSocialPage() {
                   <button type="button" className="button button-secondary" onClick={() => handleSaveAndSchedule("pending_review")}>
                     Mettre en révision
                   </button>
-                  <button type="button" className="button button-primary" onClick={() => handleSaveAndSchedule("scheduled")} style={{ background: "#10b981" }}>
+                  <button type="button" className="button button-primary" onClick={() => handleSaveAndSchedule("scheduled")} disabled={submitting || selectedProfiles.length === 0} style={{ background: "#10b981" }}>
                     🚀 Valider & Programmer (Buffer)
                   </button>
                 </div>

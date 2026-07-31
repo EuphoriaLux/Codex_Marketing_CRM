@@ -41,7 +41,7 @@ export function listKpisSummary() {
 
 // GET /hub/social/featured-profiles — anonymized member profiles.
 export function listFeaturedProfiles() {
-  return apiGet<{ items: { id: string; first_name: string; age: number; region: string; passions: string[]; bio_quote: string }[] }>("/hub/social/featured-profiles");
+  return apiGet<{ items: { id: string; first_name: string; age: string; region: string; passions: string[]; bio_quote: string }[] }>("/hub/social/featured-profiles");
 }
 
 // POST /hub/social/generate — Django calls the Claude API server-side and
@@ -54,7 +54,7 @@ export function generateDrafts(payload: {
   languages: SocialLanguage[];
   event_id?: string;
   stats?: { value: string; label: string }[];
-  profile?: { first_name: string; age: number; region: string; passions: string[]; bio_quote: string };
+  profile_id?: string;
   week_start?: string;
 }) {
   return apiPost<SocialGenerateResponse>("/hub/social/generate", payload);

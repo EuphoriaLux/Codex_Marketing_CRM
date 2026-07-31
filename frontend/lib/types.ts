@@ -260,6 +260,7 @@ export type BufferProfile = {
   service_username: string;
   avatar_url?: string;
   formatted_username: string;
+  is_queue_paused?: boolean;
 };
 
 export type SocialPost = {
