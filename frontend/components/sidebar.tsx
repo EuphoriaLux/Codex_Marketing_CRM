@@ -17,12 +17,17 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "Marketing",
+    items: [
+      { href: "/marketing/social", label: "Planification Réseaux", icon: "📣" },
+      { href: "/marketing/publications", label: "Publications", icon: "📢" },
+    ],
+  },
+  {
     title: "Opérations",
     items: [
       { href: "/locations", label: "Lieux", icon: "📍" },
       { href: "/resources", label: "Ressources", icon: "📁" },
-      { href: "/publications", label: "Publications", icon: "📢" },
-      { href: "/social", label: "Réseaux sociaux", icon: "📣" },
       { href: "/whatsapp", label: "WhatsApp", icon: "💬" },
       { href: "/partnership-admin", label: "Partenariat", icon: "🤝" },
       { href: "/calculator", label: "Calculator", icon: "🎟️" },

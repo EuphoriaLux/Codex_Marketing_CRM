@@ -1,5 +1,7 @@
 import { apiGet, apiPatch, apiPost } from "@/lib/api/client";
 import {
+  BufferProfilesResponse,
+  ExpandArticleResponse,
   SocialGenerateResponse,
   SocialPostResponse,
   SocialPostsResponse,
@@ -22,13 +24,38 @@ export function listSocialPosts(status?: SocialPostStatus) {
   return apiGet<SocialPostsResponse>(`/hub/social/posts${qs}`);
 }
 
+// GET /hub/social/buffer-profiles — connected Buffer social accounts.
+export function listBufferProfiles() {
+  return apiGet<BufferProfilesResponse>("/hub/social/buffer-profiles");
+}
+
+// GET /hub/social/upcoming-events — active events list.
+export function listUpcomingEvents() {
+  return apiGet<{ items: { id: string; title: string; event_type: string; date: string; location: string; image_url: string }[] }>("/hub/social/upcoming-events");
+}
+
+// GET /hub/social/kpis-summary — real-time KPI metrics snapshot.
+export function listKpisSummary() {
+  return apiGet<{ kpis: Record<string, string> }>("/hub/social/kpis-summary");
+}
+
+// GET /hub/social/featured-profiles — anonymized member profiles.
+export function listFeaturedProfiles() {
+  return apiGet<{ items: { id: string; first_name: string; age: string; region: string; passions: string[]; bio_quote: string }[] }>("/hub/social/featured-profiles");
+}
+
 // POST /hub/social/generate — Django calls the Claude API server-side and
-// returns one draft (status: "draft") per requested language.
+// returns one draft (status: "draft") per requested language across the 5 categories.
 export function generateDrafts(payload: {
+  category?: "events" | "kpis" | "profiles" | "tips" | "recaps";
   hook: string;
   pillar: SocialPillar;
   platforms: SocialPlatform[];
   languages: SocialLanguage[];
+  event_id?: string;
+  stats?: { value: string; label: string }[];
+  profile_id?: string;
+  week_start?: string;
 }) {
   return apiPost<SocialGenerateResponse>("/hub/social/generate", payload);
 }
@@ -55,7 +82,13 @@ export function updateSocialPost(
     media_url: string | null;
     status: SocialPostStatus;
     scheduled_for: string | null;
+    buffer_profile_ids?: string[];
   }>,
 ) {
   return apiPatch<SocialPostResponse>(`/hub/social/posts/${id}`, payload);
+}
+
+// POST /hub/social/posts/:id/expand-article — expand social post into a long-form article draft.
+export function expandPostToArticle(id: string) {
+  return apiPost<ExpandArticleResponse>(`/hub/social/posts/${id}/expand-article`, {});
 }

@@ -152,7 +152,24 @@ async function request<T>(
   }
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    let message = `API request failed: ${response.status}`;
+    try {
+      const payload = (await response.json()) as Record<string, unknown>;
+      if (typeof payload.error === "string") message = payload.error;
+      else if (typeof payload.detail === "string") message = payload.detail;
+      else {
+        const first = Object.entries(payload).find(([, value]) =>
+          typeof value === "string" || Array.isArray(value),
+        );
+        if (first) {
+          const value = Array.isArray(first[1]) ? first[1].join(" ") : first[1];
+          message = `${first[0]}: ${String(value)}`;
+        }
+      }
+    } catch {
+      // Preserve the status-based fallback for non-JSON upstream errors.
+    }
+    throw new Error(message);
   }
 
   return (await response.json()) as T;
