@@ -98,6 +98,7 @@ export function updateSocialPost(
     status: SocialPostStatus;
     scheduled_for: string | null;
     buffer_profile_ids?: string[];
+    buffer_profile_platforms?: Record<string, SocialPlatform>;
   }>,
 ) {
   return apiPatch<SocialPostResponse>(`/hub/social/posts/${id}`, payload);

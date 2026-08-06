@@ -274,6 +274,8 @@ export type SocialPost = {
   language: SocialLanguage;
   platforms: SocialPlatform[];
   buffer_profile_ids?: string[];
+  buffer_profile_platforms?: Record<string, SocialPlatform>;
+  dispatched_platforms?: SocialPlatform[];
   hook: string;
   content: string;
   media_url: string | null;

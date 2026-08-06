@@ -306,6 +306,11 @@ export default function MarketingSocialPage() {
         status: targetStatus,
         scheduled_for: isoDate,
         buffer_profile_ids: selectedProfiles,
+        buffer_profile_platforms: Object.fromEntries(
+          bufferProfiles
+            .filter((profile) => selectedProfiles.includes(profile.id))
+            .map((profile) => [profile.id, profile.service]),
+        ),
       });
 
       setPosts((prev) =>
