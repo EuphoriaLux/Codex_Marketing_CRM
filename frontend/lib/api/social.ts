@@ -2,9 +2,11 @@ import { apiGet, apiPatch, apiPost } from "@/lib/api/client";
 import {
   BufferProfilesResponse,
   ExpandArticleResponse,
+  SocialEventDraftsResponse,
   SocialGenerateResponse,
   SocialPostResponse,
   SocialPostsResponse,
+  SocialUpcomingEventsResponse,
 } from "@/lib/api/contracts";
 import {
   SocialLanguage,
@@ -31,7 +33,20 @@ export function listBufferProfiles() {
 
 // GET /hub/social/upcoming-events — active events list.
 export function listUpcomingEvents() {
-  return apiGet<{ items: { id: string; title: string; event_type: string; date: string; location: string; image_url: string }[] }>("/hub/social/upcoming-events");
+  return apiGet<SocialUpcomingEventsResponse>("/hub/social/upcoming-events");
+}
+
+// POST /hub/social/upcoming-events/:id/drafts — creates or reuses an
+// idempotent Facebook draft from the event's stored title, description, date,
+// location, registration URL, and banner. No AI provider is called.
+export function createEventFacebookDrafts(
+  eventId: string,
+  languages: SocialLanguage[],
+) {
+  return apiPost<SocialEventDraftsResponse>(
+    `/hub/social/upcoming-events/${eventId}/drafts`,
+    { languages },
+  );
 }
 
 // GET /hub/social/kpis-summary — real-time KPI metrics snapshot.

@@ -6,6 +6,7 @@ import { Panel } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
 import { StatusBanner } from "@/components/status-banner";
 import {
+  createEventFacebookDrafts,
   expandPostToArticle,
   generateDrafts,
   listBufferProfiles,
@@ -16,6 +17,7 @@ import {
 } from "@/lib/api/social";
 import {
   BufferProfile,
+  SocialEventSuggestion,
   SocialLanguage,
   SocialPillar,
   SocialPlatform,
@@ -67,7 +69,7 @@ const STATUS_LABEL: Record<SocialPostStatus, string> = {
 };
 
 const LANES: { key: string; title: string; statuses: SocialPostStatus[] }[] = [
-  { key: "draft", title: "Brouillons AI", statuses: ["draft"] },
+  { key: "draft", title: "Brouillons", statuses: ["draft"] },
   { key: "review", title: "À valider par l'équipe", statuses: ["pending_review"] },
   {
     key: "scheduled",
@@ -126,9 +128,9 @@ export default function MarketingSocialPage() {
 
   // Generator Drawer state
   const [generatorOpen, setGeneratorOpen] = useState(false);
-  const [genCategory, setGenCategory] = useState<"events" | "kpis" | "profiles" | "tips" | "recaps">("events");
-  const [genHook, setGenHook] = useState("Soirée rencontre Crush.lu & dégustation vins");
-  const [genPillar, setGenPillar] = useState<SocialPillar>("event_recap");
+  const [genCategory, setGenCategory] = useState<"kpis" | "profiles" | "tips" | "recaps">("tips");
+  const [genHook, setGenHook] = useState("Créer une première conversation naturelle");
+  const [genPillar, setGenPillar] = useState<SocialPillar>("dating_tip");
   const [genPlatforms, setGenPlatforms] = useState<SocialPlatform[]>(["instagram", "facebook"]);
   const [genLangs, setGenLangs] = useState<SocialLanguage[]>(["fr", "en"]);
 
@@ -154,10 +156,31 @@ export default function MarketingSocialPage() {
   }, []);
 
   // Category specific state
-  const [upcomingEvents, setUpcomingEvents] = useState<{ id: string; title: string; location: string; date: string }[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [upcomingEvents, setUpcomingEvents] = useState<SocialEventSuggestion[]>([]);
+  const [promotionLanguages, setPromotionLanguages] = useState<Record<string, SocialLanguage>>({});
+  const [promotingEventId, setPromotingEventId] = useState<string | null>(null);
   const [featuredProfiles, setFeaturedProfiles] = useState<{ id: string; first_name: string; age: string; region: string; passions: string[]; bio_quote: string }[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+
+  const fetchUpcomingEvents = useCallback(async () => {
+    try {
+      const res = await listUpcomingEvents();
+      setUpcomingEvents(res.items);
+      setPromotionLanguages((current) => {
+        const next = { ...current };
+        for (const event of res.items) {
+          if (!next[event.id]) {
+            next[event.id] = event.available_languages.includes("fr")
+              ? "fr"
+              : event.available_languages[0] || "fr";
+          }
+        }
+        return next;
+      });
+    } catch {
+      // The planner remains usable even when event suggestions are unavailable.
+    }
+  }, []);
 
   useEffect(() => {
     fetchFeed();
@@ -171,12 +194,7 @@ export default function MarketingSocialPage() {
         setBufferError(err instanceof Error ? err.message : "Buffer n'est pas configuré");
       });
 
-    listUpcomingEvents()
-      .then((res) => {
-        setUpcomingEvents(res.items);
-        if (res.items.length > 0) setSelectedEventId(res.items[0].id);
-      })
-      .catch(() => {});
+    fetchUpcomingEvents();
 
     listFeaturedProfiles()
       .then((res) => {
@@ -184,7 +202,7 @@ export default function MarketingSocialPage() {
         if (res.items.length > 0) setSelectedProfileId(res.items[0].id);
       })
       .catch(() => {});
-  }, [fetchFeed]);
+  }, [fetchFeed, fetchUpcomingEvents]);
 
   // Poll when posts sit in live Buffer states
   const hasLive = useMemo(() => posts.some((p) => LIVE.includes(p.status)), [posts]);
@@ -210,7 +228,6 @@ export default function MarketingSocialPage() {
         pillar: genPillar,
         platforms: genPlatforms,
         languages: genLangs,
-        event_id: selectedEventId,
         profile_id: genCategory === "profiles" ? selectedProfileId : undefined,
       });
       setPosts((prev) => mergeById(prev, res.posts));
@@ -229,6 +246,29 @@ export default function MarketingSocialPage() {
     }
   }
 
+  async function handleCreateEventDraft(event: SocialEventSuggestion) {
+    setPromotingEventId(event.id);
+    setNotice(null);
+    try {
+      const language = promotionLanguages[event.id] || "fr";
+      const res = await createEventFacebookDrafts(event.id, [language]);
+      setPosts((prev) => mergeById(prev, res.posts));
+      await fetchUpcomingEvents();
+      setNotice({
+        kind: "success",
+        text: res.created_count
+          ? "Brouillon Facebook créé uniquement à partir du texte de l’événement (sans IA)."
+          : "Le brouillon Facebook existant a été retrouvé — aucun doublon créé.",
+      });
+      if (res.posts[0]) openEditModal(res.posts[0]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Impossible de préparer le brouillon Facebook";
+      setNotice({ kind: "error", text: msg });
+    } finally {
+      setPromotingEventId(null);
+    }
+  }
+
   function openEditModal(post: SocialPost) {
     setEditingPost(post);
     setEditContent(post.content);
@@ -238,7 +278,12 @@ export default function MarketingSocialPage() {
       : new Date(nextFriday1600()).toISOString().slice(0, 16);
     setEditSchedule(dateVal);
     const activeProfileIds = new Set(
-      bufferProfiles.filter((profile) => !profile.is_queue_paused).map((profile) => profile.id),
+      bufferProfiles
+        .filter(
+          (profile) =>
+            !profile.is_queue_paused && post.platforms.includes(profile.service),
+        )
+        .map((profile) => profile.id),
     );
     setSelectedProfiles(
       (post.buffer_profile_ids || Array.from(activeProfileIds)).filter((id) => activeProfileIds.has(id)),
@@ -266,6 +311,7 @@ export default function MarketingSocialPage() {
       setPosts((prev) =>
         prev.map((p) => (p.id === editingPost.id ? res.post : p)),
       );
+      if (editingPost.source_event_id) await fetchUpcomingEvents();
       setNotice({
         kind: "success",
         text:
@@ -301,13 +347,23 @@ export default function MarketingSocialPage() {
   }
 
   const weekDays = useMemo(() => getWeekDays(), []);
+  const eventsToPromote = useMemo(
+    () => upcomingEvents.filter((event) => !event.is_promoted),
+    [upcomingEvents],
+  );
+  const editingBufferProfiles = useMemo(
+    () => editingPost
+      ? bufferProfiles.filter((profile) => editingPost.platforms.includes(profile.service))
+      : [],
+    [bufferProfiles, editingPost],
+  );
 
   return (
     <main className="page">
       <SectionHeader
         eyebrow="📢 Section Marketing • hub.crush.lu"
         title="Planification des Réseaux Sociaux"
-        description="Générez vos contenus hebdomadaires par IA, ajustez les visuels et validez vos publications pour un envoi automatique via Buffer."
+        description="Repérez les événements non promus, reprenez leur contenu sans IA, puis validez leur programmation Facebook via Buffer."
       />
 
       {notice && (
@@ -316,8 +372,90 @@ export default function MarketingSocialPage() {
         </div>
       )}
 
+      <Panel
+        title={`Événements à promouvoir (${eventsToPromote.length})`}
+        description="Les événements publics restent ici jusqu’à leur programmation dans Buffer. Le texte vient exclusivement de la fiche Crush.lu."
+      >
+        {eventsToPromote.length === 0 ? (
+          <p style={{ color: "#94a3b8", margin: 0 }}>
+            ✅ Tous les événements publics à venir ont déjà été programmés dans Buffer.
+          </p>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "0.85rem" }}>
+            {eventsToPromote.map((event) => {
+              const statusLabel = event.promotion_status === "not_started"
+                ? "Jamais promu"
+                : STATUS_LABEL[event.promotion_status];
+              return (
+                <div
+                  key={event.id}
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "10px",
+                    padding: "1rem",
+                    background: "rgba(255,255,255,0.025)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", alignItems: "start" }}>
+                    <div>
+                      <a href={event.event_url} target="_blank" rel="noreferrer" style={{ color: "#f8fafc", fontWeight: 650 }}>
+                        {event.title}
+                      </a>
+                      <div style={{ color: "#94a3b8", fontSize: "0.82rem", marginTop: "0.35rem" }}>
+                        {new Date(event.date).toLocaleDateString("fr-FR", {
+                          weekday: "short",
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })} · {event.location}
+                      </div>
+                    </div>
+                    <span className={`pill ${event.promotion_status === "failed" ? "overdue" : "pending"}`}>
+                      {statusLabel}
+                    </span>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.55rem", marginTop: "0.9rem", alignItems: "center", flexWrap: "wrap" }}>
+                    <select
+                      className="input"
+                      aria-label={`Langue pour ${event.title}`}
+                      value={promotionLanguages[event.id] || "fr"}
+                      onChange={(e) => setPromotionLanguages((current) => ({
+                        ...current,
+                        [event.id]: e.target.value as SocialLanguage,
+                      }))}
+                      style={{ minWidth: "115px" }}
+                    >
+                      {event.available_languages.map((language) => (
+                        <option key={language} value={language}>
+                          {LANGUAGES.find((item) => item.value === language)?.flag} {language.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="button button-primary"
+                      onClick={() => handleCreateEventDraft(event)}
+                      disabled={promotingEventId === event.id}
+                    >
+                      {promotingEventId === event.id
+                        ? "Préparation..."
+                        : event.promotion_post_id
+                          ? "Ouvrir le brouillon Facebook"
+                          : "📘 Créer le brouillon Facebook"}
+                    </button>
+                    <span style={{ color: "#22c55e", fontSize: "0.75rem" }}>Sans IA</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Panel>
+
       {/* Control Bar & Navigation Tabs */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "1.5rem 0", flexWrap: "wrap", gap: "1rem" }}>
         <div style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.05)", padding: "0.25rem", borderRadius: "8px" }}>
           <button
             type="button"
@@ -355,7 +493,7 @@ export default function MarketingSocialPage() {
               ✨ Générateur Hebdomadaire par IA (Claude)
             </h3>
             <p style={{ color: "#a1a1aa", fontSize: "0.9rem", marginBottom: "1.25rem" }}>
-              Renseignez le sujet principal ou l'événement de la semaine pour créer un lot de publications adaptées à vos canaux.
+              Ce générateur reste réservé aux contenus éditoriaux. Les événements utilisent le flux sans IA affiché sur la page principale.
             </p>
 
             <form onSubmit={handleGenerateBatch} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -369,37 +507,12 @@ export default function MarketingSocialPage() {
                   onChange={(e) => setGenCategory(e.target.value as any)}
                   style={{ width: "100%" }}
                 >
-                  <option value="events">🎉 Catégorie 1 : Événements à venir (Flyer + Booking)</option>
                   <option value="kpis">📊 Catégorie 2 : Statistiques & KPIs (Nouveaux Inscrits, Matchs)</option>
                   <option value="profiles">👤 Catégorie 3 : Profil Anonymisé (Membre de la semaine)</option>
                   <option value="tips">💡 Catégorie 4 : Conseils Rencontre (Dating Tips)</option>
                   <option value="recaps">✨ Catégorie 5 : Récaps & Avis Événements passés</option>
                 </select>
               </div>
-
-              {genCategory === "events" && upcomingEvents.length > 0 && (
-                <div>
-                  <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.3rem", color: "#cbd5e1" }}>
-                    Événement à mettre en avant
-                  </label>
-                  <select
-                    className="input"
-                    value={selectedEventId}
-                    onChange={(e) => {
-                      setSelectedEventId(e.target.value);
-                      const evt = upcomingEvents.find((item) => item.id === e.target.value);
-                      if (evt) setGenHook(evt.title);
-                    }}
-                    style={{ width: "100%" }}
-                  >
-                    {upcomingEvents.map((evt) => (
-                      <option key={evt.id} value={evt.id}>
-                        {evt.title} ({evt.location})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
               {genCategory === "profiles" && featuredProfiles.length > 0 && (
                 <div>
@@ -529,6 +642,12 @@ export default function MarketingSocialPage() {
               <StatusBadge status={editingPost.status} />
             </div>
 
+            {editingPost.source_event_title && (
+              <p style={{ margin: "-0.4rem 0 1rem", color: "#93c5fd", fontSize: "0.85rem" }}>
+                🎟️ Contenu repris de l’événement : {editingPost.source_event_title}
+              </p>
+            )}
+
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
                 <label style={{ display: "block", fontSize: "0.85rem", color: "#cbd5e1", marginBottom: "0.3rem" }}>
@@ -584,12 +703,12 @@ export default function MarketingSocialPage() {
                     Comptes Buffer cibles
                   </label>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    {bufferProfiles.length === 0 && (
+                    {editingBufferProfiles.length === 0 && (
                       <span style={{ fontSize: "0.8rem", color: "#fca5a5" }}>
-                        {bufferError || "Aucun compte Buffer compatible n'est disponible."}
+                        {bufferError || "Aucun compte Buffer compatible avec cette publication n'est disponible."}
                       </span>
                     )}
-                    {bufferProfiles.map((bp) => (
+                    {editingBufferProfiles.map((bp) => (
                       <label key={bp.id} style={{ fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                         <input
                           type="checkbox"
@@ -675,6 +794,12 @@ export default function MarketingSocialPage() {
                         <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", fontWeight: 500, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                           {post.content}
                         </p>
+
+                        {post.source_event_title && (
+                          <div style={{ fontSize: "0.75rem", color: "#93c5fd", marginBottom: "0.5rem" }}>
+                            🎟️ {post.source_event_title} · sans IA
+                          </div>
+                        )}
 
                         {post.media_url && (
                           <div style={{ fontSize: "0.75rem", color: "#38bdf8", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>

@@ -247,6 +247,8 @@ export type SocialPostStatus =
   | "published"
   | "failed";
 
+export type SocialPromotionStatus = SocialPostStatus | "not_started";
+
 export type SocialStatusEvent = {
   status: SocialPostStatus;
   timestamp: string;
@@ -266,6 +268,8 @@ export type BufferProfile = {
 export type SocialPost = {
   id: string;
   created_by: string;
+  source_event_id?: string | null;
+  source_event_title?: string | null;
   pillar: SocialPillar;
   language: SocialLanguage;
   platforms: SocialPlatform[];
@@ -280,6 +284,20 @@ export type SocialPost = {
   status_history: SocialStatusEvent[];
   created_at: string;
   updated_at: string;
+};
+
+export type SocialEventSuggestion = {
+  id: string;
+  title: string;
+  event_type: string;
+  date: string;
+  location: string;
+  image_url: string;
+  event_url: string;
+  available_languages: SocialLanguage[];
+  promotion_post_id: string | null;
+  promotion_status: SocialPromotionStatus;
+  is_promoted: boolean;
 };
 
 export type WhatsAppInboundMessage = {
