@@ -386,6 +386,7 @@ export default function MarketingSocialPage() {
               const statusLabel = event.promotion_status === "not_started"
                 ? "Jamais promu"
                 : STATUS_LABEL[event.promotion_status];
+              const hasStoredCopy = event.available_languages.length > 0;
               return (
                 <div
                   key={event.id}
@@ -426,6 +427,7 @@ export default function MarketingSocialPage() {
                         [event.id]: e.target.value as SocialLanguage,
                       }))}
                       style={{ minWidth: "115px" }}
+                      disabled={!hasStoredCopy}
                     >
                       {event.available_languages.map((language) => (
                         <option key={language} value={language}>
@@ -437,15 +439,19 @@ export default function MarketingSocialPage() {
                       type="button"
                       className="button button-primary"
                       onClick={() => handleCreateEventDraft(event)}
-                      disabled={promotingEventId === event.id}
+                      disabled={promotingEventId === event.id || !hasStoredCopy}
                     >
-                      {promotingEventId === event.id
-                        ? "Préparation..."
-                        : event.promotion_post_id
-                          ? "Ouvrir le brouillon Facebook"
-                          : "📘 Créer le brouillon Facebook"}
+                      {!hasStoredCopy
+                        ? "Traduction manquante"
+                        : promotingEventId === event.id
+                          ? "Préparation..."
+                          : event.promotion_post_id
+                            ? "Ouvrir le brouillon Facebook"
+                            : "📘 Créer le brouillon Facebook"}
                     </button>
-                    <span style={{ color: "#22c55e", fontSize: "0.75rem" }}>Sans IA</span>
+                    <span style={{ color: hasStoredCopy ? "#22c55e" : "#f59e0b", fontSize: "0.75rem" }}>
+                      {hasStoredCopy ? "Sans IA" : "Ajoutez d’abord une traduction à l’événement"}
+                    </span>
                   </div>
                 </div>
               );
