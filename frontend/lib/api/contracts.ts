@@ -2,6 +2,7 @@ import {
   CustomerSnapshot,
   RequestItem,
   ResourceItem,
+  SocialEventSuggestion,
   SocialPost,
   WhatsAppInboundMessage,
   WhatsAppMessage,
@@ -35,6 +36,13 @@ export type WhatsAppSendResponse = { message: WhatsAppMessage };
 
 export type SocialPostsResponse = { items: SocialPost[] };
 export type SocialPostResponse = { post: SocialPost };
+export type SocialUpcomingEventsResponse = { items: SocialEventSuggestion[] };
+export type SocialEventDraftsResponse = {
+  posts: SocialPost[];
+  created_count: number;
+  reused_count: number;
+  copy_source: "event";
+};
 // POST /hub/social/generate returns one draft per requested language.
 export type SocialGenerateResponse = { posts: SocialPost[]; warnings?: string[] };
 export type BufferProfilesResponse = { items: import("@/lib/types").BufferProfile[] };
