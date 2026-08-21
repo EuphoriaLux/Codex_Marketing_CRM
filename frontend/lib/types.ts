@@ -340,6 +340,7 @@ export type LinkedCrushCredit = {
   status: string;
   amountCents: number;
   cashRefundEligible: boolean;
+  note?: string;
 };
 
 export type EventCancellationRegistration = {
@@ -350,5 +351,8 @@ export type EventCancellationRegistration = {
   paymentConfirmed: boolean;
   credit: LinkedCrushCredit | null;
   openCashRefund: boolean;
+  cancellationOrigin?: "member" | "organiser";
+  paymentStatus?: "refunded" | "paid" | "none";
+  refundAmountCents?: number | null;
 };
 

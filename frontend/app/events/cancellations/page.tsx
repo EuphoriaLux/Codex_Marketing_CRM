@@ -239,11 +239,10 @@ export default function EventCancellationsPage() {
                 <thead>
                   <tr>
                     <th>Email Membre</th>
+                    <th>Origine Annulation</th>
                     <th>Statut</th>
-                    <th>Date d'annulation</th>
-                    <th>Paiement Confirmé</th>
                     <th>Crush Credit Lié</th>
-                    <th>Demande Cash</th>
+                    <th>Remboursement & Demande Cash</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -253,28 +252,95 @@ export default function EventCancellationsPage() {
                         <strong>{reg.userEmail || "Anonyme / ID " + reg.id}</strong>
                       </td>
                       <td>
-                        <span className="pill">{reg.status}</span>
-                      </td>
-                      <td>{reg.cancelledAt ? formatDate(reg.cancelledAt) : "—"}</td>
-                      <td>
-                        {reg.paymentConfirmed ? (
-                          <span style={{ color: "var(--success)" }}>✓ Oui</span>
+                        {reg.cancelledAt ? (
+                          <div>
+                            <span
+                              className="pill"
+                              style={{
+                                background: "rgba(99, 102, 241, 0.15)",
+                                color: "#6366f1",
+                                fontWeight: 500,
+                              }}
+                            >
+                              👤 Auto-annulation membre
+                            </span>
+                            <div
+                              style={{
+                                fontSize: "0.75rem",
+                                color: "var(--muted)",
+                                marginTop: "0.2rem",
+                              }}
+                            >
+                              {formatDate(reg.cancelledAt)}
+                            </div>
+                          </div>
                         ) : (
-                          <span style={{ color: "var(--muted)" }}>Non</span>
+                          <span
+                            className="pill"
+                            style={{
+                              background: "rgba(107, 114, 128, 0.15)",
+                              color: "var(--muted)",
+                            }}
+                          >
+                            🏢 Annulation organisateur
+                          </span>
                         )}
                       </td>
                       <td>
+                        <span className="pill">{reg.status}</span>
+                      </td>
+                      <td>
                         {reg.credit ? (
-                          <span>
-                            <strong>{formatEUR(reg.credit.amountCents)}</strong> (
-                            {reg.credit.status})
-                          </span>
+                          reg.credit.status === "active" ? (
+                            <span
+                              className="pill"
+                              style={{
+                                background: "rgba(16, 185, 129, 0.15)",
+                                color: "#10b981",
+                                fontWeight: 600,
+                              }}
+                            >
+                              💳 {formatEUR(reg.credit.amountCents)} (actif)
+                            </span>
+                          ) : reg.credit.status === "void" ? (
+                            <span
+                              className="pill"
+                              style={{
+                                background: "rgba(239, 68, 68, 0.1)",
+                                color: "#ef4444",
+                              }}
+                            >
+                              🚫 {formatEUR(reg.credit.amountCents)} (désactivé)
+                            </span>
+                          ) : (
+                            <span className="pill">
+                              {formatEUR(reg.credit.amountCents)} ({reg.credit.status})
+                            </span>
+                          )
                         ) : (
                           <span style={{ color: "var(--muted)" }}>Aucun crédit</span>
                         )}
                       </td>
                       <td>
-                        {reg.openCashRefund ? (
+                        {reg.paymentStatus === "refunded" ||
+                        (reg.credit?.status === "void" &&
+                          (reg.credit?.note || "").toLowerCase().includes("refund")) ? (
+                          <span
+                            className="pill"
+                            style={{
+                              background: "rgba(16, 185, 129, 0.2)",
+                              color: "#059669",
+                              fontWeight: 600,
+                            }}
+                          >
+                            🟢 ✓ Remboursé SumUp{" "}
+                            {reg.refundAmountCents
+                              ? `(${formatEUR(reg.refundAmountCents)})`
+                              : reg.credit
+                              ? `(${formatEUR(reg.credit.amountCents)})`
+                              : ""}
+                          </span>
+                        ) : reg.openCashRefund ? (
                           <span
                             className="pill"
                             style={{
@@ -283,10 +349,23 @@ export default function EventCancellationsPage() {
                               fontWeight: 600,
                             }}
                           >
-                            ⚠️ En attente de virement
+                            🟠 ⚠️ En attente de virement{" "}
+                            {reg.credit ? `(${formatEUR(reg.credit.amountCents)})` : ""}
+                          </span>
+                        ) : reg.credit && reg.credit.status === "active" ? (
+                          <span
+                            className="pill"
+                            style={{
+                              background: "rgba(59, 130, 246, 0.15)",
+                              color: "#3b82f6",
+                            }}
+                          >
+                            🔵 Avoir conservé (non cash)
                           </span>
                         ) : (
-                          <span style={{ color: "var(--muted)" }}>—</span>
+                          <span style={{ color: "var(--muted)" }}>
+                            ⚪ Non débité / Pas de cash dû
+                          </span>
                         )}
                       </td>
                     </tr>
