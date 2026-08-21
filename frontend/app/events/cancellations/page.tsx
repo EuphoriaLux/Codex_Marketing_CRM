@@ -252,7 +252,7 @@ export default function EventCancellationsPage() {
                         <strong>{reg.userEmail || "Anonyme / ID " + reg.id}</strong>
                       </td>
                       <td>
-                        {reg.cancelledAt ? (
+                        {reg.cancellationOrigin === "member" && reg.cancelledAt ? (
                           <div>
                             <span
                               className="pill"
