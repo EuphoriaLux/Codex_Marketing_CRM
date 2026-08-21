@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Panel } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
-import { useHubData } from "@/lib/hub-provider";
+import { StatusBanner } from "@/components/status-banner";
+import { fetchAllFinanceData } from "@/lib/api/finance";
+import { fetchLocations } from "@/lib/api/locations";
 import type {
+  EventProfitability,
+  LocationItem,
   PaymentInItem,
   PaymentMethod,
   PaymentOutCategory,
@@ -101,7 +105,7 @@ function downloadCSV(filename: string, rows: (string | number)[][]) {
         .join(";"),
     )
     .join("\n");
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -219,16 +223,50 @@ function trend(currentISO: string, current: number, previous: number) {
 }
 
 export default function AccountingPage() {
-  const {
-    paymentsIn,
-    paymentsOut,
-    payroll,
-    refunds,
-    eventProfitability,
-    locations,
-  } = useHubData();
+  const [paymentsIn, setPaymentsIn] = useState<PaymentInItem[]>([]);
+  const [paymentsOut, setPaymentsOut] = useState<PaymentOutItem[]>([]);
+  const [payroll, setPayroll] = useState<PayrollItem[]>([]);
+  const [refunds, setRefunds] = useState<RefundItem[]>([]);
+  const [eventProfitability, setEventProfitability] = useState<EventProfitability[]>([]);
+  const [locations, setLocations] = useState<LocationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [period, setPeriod] = useState<Period>("all");
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const [fin, locs] = await Promise.all([
+          fetchAllFinanceData(),
+          fetchLocations(),
+        ]);
+        if (mounted) {
+          setPaymentsIn(fin.paymentsIn);
+          setPaymentsOut(fin.paymentsOut);
+          setPayroll(fin.payroll);
+          setRefunds(fin.refunds);
+          setLocations(locs);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError("Impossible de charger les données financières de Crush.lu.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+    void load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const locationName = (id?: string) =>
     locations.find((l) => l.id === id)?.name ?? "—";
@@ -457,11 +495,25 @@ export default function AccountingPage() {
 
   return (
     <main className="page">
+      <StatusBanner />
       <SectionHeader
-        eyebrow="Comptabilité"
+        eyebrow="💰 FinOps & Comptabilité"
         title="Paiements, dépenses et trésorerie en un coup d'œil."
-        description="Vue d'ensemble des encaissements, des versements aux partenaires, de la masse salariale et de la rentabilité, regroupés pour le comptable."
+        description="Vue d'ensemble des encaissements, des versements aux partenaires, de la masse salariale et de la rentabilité, synchronisés depuis l'API Crush.lu."
       />
+
+      {error ? (
+        <div className="panel" style={{ color: "var(--danger)", padding: "1rem" }}>
+          ⚠️ {error}
+        </div>
+      ) : null}
+
+      {loading ? (
+        <div className="panel" style={{ textAlign: "center", color: "var(--muted)", padding: "1.5rem" }}>
+          Chargement des données comptables et bancaires en cours...
+        </div>
+      ) : null}
+
 
       <section className="panel accounting-toolbar">
         <input

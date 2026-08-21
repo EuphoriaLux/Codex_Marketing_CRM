@@ -5,7 +5,7 @@ import { HeroStats } from "@/components/hero-stats";
 import { Panel } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
 import { StatusBanner } from "@/components/status-banner";
-import { useHubData } from "@/lib/hub-provider";
+import { fetchLocations } from "@/lib/api/locations";
 import type { LocationItem, PartnershipStage } from "@/lib/types";
 
 const stageOrder: Record<PartnershipStage, number> = {
@@ -25,13 +25,43 @@ const stageClass: Record<PartnershipStage, string> = {
 };
 
 export default function LocationsPage() {
-  const { locations } = useHubData();
+  const [locations, setLocations] = useState<LocationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchLocations();
+        if (mounted) {
+          setLocations(data);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError("Impossible de charger la liste des lieux partenaires.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+    void load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const sorted = useMemo(
     () =>
       [...locations].sort(
-        (a, b) => stageOrder[a.partnershipStage] - stageOrder[b.partnershipStage],
+        (a, b) =>
+          (stageOrder[a.partnershipStage] ?? 99) -
+          (stageOrder[b.partnershipStage] ?? 99),
       ),
     [locations],
   );
@@ -44,9 +74,9 @@ export default function LocationsPage() {
         l.partnershipStage === "Prospect" || l.partnershipStage === "Negotiating",
     ).length;
     return [
-      { label: "Partner venues", value: String(total).padStart(2, "0") },
-      { label: "Active partners", value: String(active).padStart(2, "0") },
-      { label: "Pipeline", value: String(prospects).padStart(2, "0") },
+      { label: "Lieux partenaires", value: String(total).padStart(2, "0") },
+      { label: "Partenaires actifs", value: String(active).padStart(2, "0") },
+      { label: "En négociation / Pipeline", value: String(prospects).padStart(2, "0") },
     ];
   }, [locations]);
 
@@ -68,43 +98,63 @@ export default function LocationsPage() {
     <main className="page">
       <StatusBanner />
       <SectionHeader
-        eyebrow="Hub"
-        title="Locations"
-        description="Partner venues hosting Crush events across Luxembourg — capacity, fit, and pipeline status in one place."
+        eyebrow="📍 Opérations & Lieux"
+        title="Lieux Partenaires"
+        description="Salles, bars et restaurants partenaires accueillant les événements Crush à Luxembourg — capacités, contacts et statut pipeline."
       />
 
       <HeroStats metrics={metrics} />
 
-      <Panel
-        title="Partner venues"
-        description="Click a venue to open its full record. Records are read-only in this iteration."
-      >
-        <div className="location-list">
-          {sorted.map((loc) => (
-            <button
-              key={loc.id}
-              type="button"
-              className={`location-row${selectedId === loc.id ? " active" : ""}`}
-              onClick={() =>
-                setSelectedId((current) => (current === loc.id ? null : loc.id))
-              }
-            >
-              <div className="location-row-name">
-                <strong>{loc.name}</strong>
-                <span>{loc.city}</span>
-              </div>
-              <span className={`stage-pill ${stageClass[loc.partnershipStage]}`}>
-                {loc.partnershipStage}
-              </span>
-              <span className="location-row-meta">up to {loc.maxCapacity}</span>
-              <span className="location-row-meta">
-                {loc.compatibleEventTypes.length} event type
-                {loc.compatibleEventTypes.length === 1 ? "" : "s"}
-              </span>
-              <span className="location-row-meta">{loc.lastContactDate}</span>
-            </button>
-          ))}
+      {error ? (
+        <div className="panel" style={{ color: "var(--danger)", padding: "1rem" }}>
+          ⚠️ {error}
         </div>
+      ) : null}
+
+      <Panel
+        title="Liste des établissements"
+        description="Cliquez sur un lieu pour afficher sa fiche complète (contacts, équipements, conditions commerciales)."
+      >
+        {loading ? (
+          <div style={{ padding: "2rem", textAlign: "center", color: "var(--muted)" }}>
+            Chargement des lieux partenaires depuis l'API...
+          </div>
+        ) : sorted.length === 0 ? (
+          <div style={{ padding: "2rem", textAlign: "center", color: "var(--muted)" }}>
+            Aucun lieu partenaire trouvé ou session non authentifiée.
+          </div>
+        ) : (
+          <div className="location-list">
+            {sorted.map((loc) => (
+              <button
+                key={loc.id}
+                type="button"
+                className={`location-row${selectedId === loc.id ? " active" : ""}`}
+                onClick={() =>
+                  setSelectedId((current) => (current === loc.id ? null : loc.id))
+                }
+              >
+                <div className="location-row-name">
+                  <strong>{loc.name}</strong>
+                  <span>{loc.city}</span>
+                </div>
+                <span className={`stage-pill ${stageClass[loc.partnershipStage] || "prospect"}`}>
+                  {loc.partnershipStage}
+                </span>
+                <span className="location-row-meta">
+                  Capacité : {loc.maxCapacity} pers.
+                  {loc.seatedCapacity ? ` (${loc.seatedCapacity} assis)` : ""}
+                </span>
+                <span className="location-row-meta">
+                  {loc.compatibleEventTypes?.length || 0} type(s) d'events
+                </span>
+                <span className="location-row-meta">
+                  {loc.lastContactDate ? `Contact : ${loc.lastContactDate}` : "Sans contact"}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </Panel>
 
       {selected ? (
@@ -141,7 +191,7 @@ function LocationDrawer({
           <div>
             <h2>{location.name}</h2>
             <p className="drawer-subtitle">
-              <span className={`stage-pill ${stageClass[location.partnershipStage]}`}>
+              <span className={`stage-pill ${stageClass[location.partnershipStage] || "prospect"}`}>
                 {location.partnershipStage}
               </span>
               {" · "}
@@ -152,7 +202,7 @@ function LocationDrawer({
             type="button"
             className="drawer-close"
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Fermer"
           >
             ×
           </button>
@@ -160,34 +210,34 @@ function LocationDrawer({
 
         <div className="drawer-body">
           <section className="drawer-section">
-            <h3>Address</h3>
+            <h3>Adresse</h3>
             <p>{location.address}</p>
           </section>
 
           <section className="drawer-section">
-            <h3>Capacity</h3>
+            <h3>Capacités & Équipements</h3>
             <dl className="location-meta-grid">
-              <dt>Max capacity</dt>
-              <dd>{location.maxCapacity} guests</dd>
+              <dt>Capacité Maximale</dt>
+              <dd>{location.maxCapacity} personnes</dd>
               {location.seatedCapacity !== undefined ? (
                 <>
-                  <dt>Seated</dt>
-                  <dd>{location.seatedCapacity} guests</dd>
+                  <dt>Places assises</dt>
+                  <dd>{location.seatedCapacity} personnes</dd>
                 </>
               ) : null}
             </dl>
             <div className="feature-chip-row">
-              <FeatureChip label="Outdoor space" on={location.hasOutdoorSpace} />
-              <FeatureChip label="Kitchen" on={location.hasKitchen} />
-              <FeatureChip label="Private room" on={location.hasPrivateRoom} />
-              <FeatureChip label="Sound system" on={location.hasSoundSystem} />
+              <FeatureChip label="Espace extérieur / Terrasse" on={location.hasOutdoorSpace} />
+              <FeatureChip label="Cuisine disponible" on={location.hasKitchen} />
+              <FeatureChip label="Espace privatisable" on={location.hasPrivateRoom} />
+              <FeatureChip label="Système son / Micro" on={location.hasSoundSystem} />
             </div>
           </section>
 
           <section className="drawer-section">
-            <h3>Compatible event types</h3>
+            <h3>Types d'événements adaptés</h3>
             <div className="event-type-row">
-              {location.compatibleEventTypes.map((type) => (
+              {(location.compatibleEventTypes || []).map((type) => (
                 <span key={type} className="event-type-chip">
                   {type}
                 </span>
@@ -195,50 +245,60 @@ function LocationDrawer({
             </div>
           </section>
 
-          <section className="drawer-section">
-            <h3>Primary contact</h3>
-            <div className="contact-line">
-              <strong>
-                {location.primaryContact.name}
-                <span style={{ color: "var(--muted)", fontWeight: 400 }}>
-                  {" — "}
-                  {location.primaryContact.role}
-                </span>
-              </strong>
-              <a href={`mailto:${location.primaryContact.email}`}>
-                {location.primaryContact.email}
-              </a>
-              <a href={`tel:${location.primaryContact.phone.replace(/\s+/g, "")}`}>
-                {location.primaryContact.phone}
-              </a>
-            </div>
-          </section>
+          {location.primaryContact && (
+            <section className="drawer-section">
+              <h3>Contact Principal</h3>
+              <div className="contact-line">
+                <strong>
+                  {location.primaryContact.name || "Non renseigné"}
+                  {location.primaryContact.role && (
+                    <span style={{ color: "var(--muted)", fontWeight: 400 }}>
+                      {" — "}
+                      {location.primaryContact.role}
+                    </span>
+                  )}
+                </strong>
+                {location.primaryContact.email && (
+                  <a href={`mailto:${location.primaryContact.email}`}>
+                    {location.primaryContact.email}
+                  </a>
+                )}
+                {location.primaryContact.phone && (
+                  <a href={`tel:${location.primaryContact.phone.replace(/\s+/g, "")}`}>
+                    {location.primaryContact.phone}
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
 
           <section className="drawer-section">
-            <h3>Partnership</h3>
+            <h3>Partenariat & Gestion</h3>
             <dl className="location-meta-grid">
-              <dt>Account manager</dt>
-              <dd>{location.accountManager}</dd>
+              <dt>Responsable de compte</dt>
+              <dd>{location.accountManager || "Non assigné"}</dd>
               {location.partnerSince ? (
                 <>
-                  <dt>Partner since</dt>
+                  <dt>Partenaire depuis</dt>
                   <dd>{location.partnerSince}</dd>
                 </>
               ) : null}
             </dl>
             {location.commercialTerms ? (
-              <p>{location.commercialTerms}</p>
+              <p style={{ marginTop: "0.5rem" }}>
+                <strong>Conditions :</strong> {location.commercialTerms}
+              </p>
             ) : null}
           </section>
 
           <section className="drawer-section">
-            <h3>Activity</h3>
+            <h3>Historique & Suivi</h3>
             <dl className="location-meta-grid">
-              <dt>Last contact</dt>
-              <dd>{location.lastContactDate}</dd>
+              <dt>Dernier contact</dt>
+              <dd>{location.lastContactDate || "—"}</dd>
               {location.nextAction ? (
                 <>
-                  <dt>Next action</dt>
+                  <dt>Prochaine action</dt>
                   <dd>
                     {location.nextAction}
                     {location.nextActionDate ? ` — ${location.nextActionDate}` : ""}
@@ -246,10 +306,10 @@ function LocationDrawer({
                 </>
               ) : null}
             </dl>
-            {location.notes ? <p>{location.notes}</p> : null}
+            {location.notes ? <p style={{ marginTop: "0.5rem" }}>{location.notes}</p> : null}
           </section>
 
-          {location.tags.length > 0 ? (
+          {location.tags && location.tags.length > 0 ? (
             <section className="drawer-section">
               <h3>Tags</h3>
               <div className="tag-row">

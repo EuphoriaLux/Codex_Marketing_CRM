@@ -1,9 +1,17 @@
 import {
   CustomerSnapshot,
+  EventCancellationRegistration,
+  EventCancellationSummary,
+  LocationItem,
+  PaymentInItem,
+  PaymentOutItem,
+  PayrollItem,
+  RefundItem,
   RequestItem,
   ResourceItem,
   SocialEventSuggestion,
   SocialPost,
+  TeamMember,
   WhatsAppInboundMessage,
   WhatsAppMessage,
   WhatsAppTemplate,
@@ -30,6 +38,39 @@ export type TimelineResponse = {
   }[];
 };
 
+export type LocationsResponse = {
+  items: LocationItem[];
+};
+
+export type PaymentsInResponse = {
+  items: PaymentInItem[];
+};
+
+export type PaymentsOutResponse = {
+  items: PaymentOutItem[];
+};
+
+export type PayrollResponse = {
+  items: PayrollItem[];
+};
+
+export type RefundsResponse = {
+  items: RefundItem[];
+};
+
+export type TeamMembersResponse = {
+  items: TeamMember[];
+};
+
+export type EventCancellationsResponse = {
+  items: EventCancellationSummary[];
+};
+
+export type EventCancellationDetailResponse = {
+  event: EventCancellationSummary;
+  items: EventCancellationRegistration[];
+};
+
 export type WhatsAppTemplatesResponse = { items: WhatsAppTemplate[] };
 export type WhatsAppMessagesResponse = { items: WhatsAppMessage[] };
 export type WhatsAppSendResponse = { message: WhatsAppMessage };
@@ -52,3 +93,4 @@ export type WhatsAppInboxResponse = {
   items: WhatsAppInboundMessage[];
   unread_count: number;
 };
+

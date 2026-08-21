@@ -12,36 +12,42 @@ const navSections: NavSection[] = [
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: "📊" },
       { href: "/planning", label: "Planning", icon: "🗓️" },
-      { href: "/team", label: "Équipe", icon: "👥" },
+      { href: "/team", label: "Équipe & Coachs", icon: "👥" },
       { href: "/requests", label: "Demandes", icon: "📋" },
+    ],
+  },
+  {
+    title: "Événements & Billetterie",
+    items: [
+      { href: "/events/cancellations", label: "Annulations & Crédits", icon: "🎟️" },
+    ],
+  },
+  {
+    title: "Opérations & CRM",
+    items: [
+      { href: "/locations", label: "Lieux & Salles", icon: "📍" },
+      { href: "/resources", label: "Ressources", icon: "📁" },
+      { href: "/whatsapp", label: "WhatsApp Support", icon: "💬" },
+      { href: "/partnership-admin", label: "Partenariats", icon: "🤝" },
+      { href: "/calculator", label: "Calculateur Marges", icon: "🧮" },
     ],
   },
   {
     title: "Marketing",
     items: [
       { href: "/marketing/social", label: "Planification Réseaux", icon: "📣" },
-      { href: "/marketing/publications", label: "Publications", icon: "📢" },
+      { href: "/marketing/publications", label: "Publications & Blog", icon: "📢" },
     ],
   },
   {
-    title: "Opérations",
+    title: "FinOps & Comptabilité",
     items: [
-      { href: "/locations", label: "Lieux", icon: "📍" },
-      { href: "/resources", label: "Ressources", icon: "📁" },
-      { href: "/whatsapp", label: "WhatsApp", icon: "💬" },
-      { href: "/partnership-admin", label: "Partenariat", icon: "🤝" },
-      { href: "/calculator", label: "Calculator", icon: "🎟️" },
+      { href: "/accounting", label: "Comptabilité Générale", icon: "💰" },
+      { href: "/accounting?tab=payroll", label: "Salaires & Dépenses", icon: "💼" },
     ],
   },
   {
-    title: "Finances",
-    items: [
-      { href: "/accounting", label: "Comptabilité", icon: "💰" },
-      { href: "/accounting?tab=payroll", label: "Salaires", icon: "💼" },
-    ],
-  },
-  {
-    title: "Compte",
+    title: "Compte & Système",
     items: [
       { href: "/settings", label: "Paramètres", icon: "⚙️" },
     ],
@@ -58,7 +64,7 @@ export function Sidebar() {
           <div className="brand-mark">◆</div>
           <div className="brand-copy">
             <h1>Crush Hub</h1>
-            <p>Espace équipe</p>
+            <p>Cockpit Opérationnel</p>
           </div>
         </div>
 

@@ -312,3 +312,43 @@ export type WhatsAppInboundMessage = {
   received_at: string;
   is_read: boolean;
 };
+
+export type TeamMember = {
+  name: string;
+  role: string;
+  initial: string;
+  gradient: string;
+  events: number | string;
+  presence: string;
+};
+
+export type EventCancellationSummary = {
+  id: string;
+  title: string;
+  eventType: string;
+  dateTime: string;
+  isCancelled: boolean;
+  organiserCancellationStartedAt?: string | null;
+  affectedRegistrations: number;
+  issuedCreditsCount: number;
+  issuedCreditsTotalCents: number;
+  openCashRefundTotalCents: number;
+};
+
+export type LinkedCrushCredit = {
+  id: string;
+  status: string;
+  amountCents: number;
+  cashRefundEligible: boolean;
+};
+
+export type EventCancellationRegistration = {
+  id: string;
+  userEmail: string | null;
+  status: string;
+  cancelledAt: string | null;
+  paymentConfirmed: boolean;
+  credit: LinkedCrushCredit | null;
+  openCashRefund: boolean;
+};
+
