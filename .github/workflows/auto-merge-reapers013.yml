@@ -13,6 +13,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 jobs:
   auto-merge:
@@ -48,3 +49,11 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
           gh pr merge "$PR_URL" --squash --delete-branch
+
+      - name: Trigger Azure Deployment
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Triggering Azure Static Web Apps deployment for main..."
+          gh workflow run "Azure Static Web Apps CI/CD" --ref main
