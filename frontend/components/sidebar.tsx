@@ -11,6 +11,7 @@ const navSections: NavSection[] = [
     title: "Pilotage",
     items: [
       { href: "/dashboard", label: "Tableau de bord", icon: "📊" },
+      { href: "/analytics", label: "Analytics", icon: "📈" },
       { href: "/planning", label: "Planning", icon: "🗓️" },
       { href: "/team", label: "Équipe & Coachs", icon: "👥" },
       { href: "/requests", label: "Demandes", icon: "📋" },

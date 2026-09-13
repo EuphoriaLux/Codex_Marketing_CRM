@@ -111,3 +111,104 @@ export type WhatsAppInboxResponse = {
   unread_count: number;
 };
 
+export type AnalyticsSourceStatus = {
+  id: "search-console" | "ga4" | "application-insights" | "crush";
+  label: string;
+  status: "ready" | "unavailable" | "error";
+  observedThrough: string | null;
+  message: string | null;
+};
+
+export type AnalyticsOverviewResponse = {
+  generatedAt: string;
+  period: {
+    days: 7 | 28 | 90;
+    startDate: string;
+    endDate: string;
+    timezone: string;
+  };
+  sources: AnalyticsSourceStatus[];
+  overview: {
+    searchImpressions: number | null;
+    searchClicks: number | null;
+    webSessions: number | null;
+    authenticatedUsers: number | null;
+    pendingProfiles: number;
+    verifiedProfiles: number;
+  };
+  search: {
+    summary: {
+      clicks: number;
+      impressions: number;
+      ctr: number;
+      position: number;
+    } | null;
+    daily: Array<{
+      date: string;
+      clicks: number;
+      impressions: number;
+      ctr: number;
+      position: number;
+    }>;
+    landingPages: Array<{
+      path: string;
+      clicks: number | null;
+      impressions: number | null;
+      ctr: number | null;
+      position: number | null;
+      sessions: number | null;
+      users: number | null;
+      engagementRate: number | null;
+    }>;
+  };
+  audience: {
+    summary: {
+      sessions: number;
+      users: number;
+      engagementRate: number;
+    } | null;
+    daily: Array<{
+      date: string;
+      sessions: number;
+      users: number;
+      engagementRate: number;
+    }>;
+  };
+  product: {
+    summary: {
+      pageViews: number;
+      sessions: number;
+      users: number;
+      exceptions: number;
+    } | null;
+    daily: Array<{
+      date: string;
+      page_views: number;
+      sessions: number;
+      users: number;
+      exceptions: number;
+    }>;
+    events: Array<{ name: string; count: number }>;
+  };
+  activation: {
+    current: {
+      total: number;
+      incomplete: number;
+      pending: number;
+      verified: number;
+      rejected: number;
+    };
+    weekly: Array<{
+      weekStart: string;
+      weekEnd: string;
+      newSignups: number | null;
+      profilesSubmitted: number | null;
+      profilesVerified: number | null;
+      cumulativeVerifiedMembers: number | null;
+      waitlistNew: number | null;
+      waitlistTotal: number | null;
+    }>;
+  };
+  caveats: string[];
+};
+
