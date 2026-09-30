@@ -300,11 +300,19 @@ export default function MarketingSocialPage() {
     setNotice(null);
     try {
       const isoDate = editSchedule ? new Date(editSchedule).toISOString() : null;
+      const selectedPlatforms = Array.from(
+        new Set(
+          bufferProfiles
+            .filter((profile) => selectedProfiles.includes(profile.id))
+            .map((profile) => profile.service),
+        ),
+      );
       const res = await updateSocialPost(editingPost.id, {
         content: editContent,
         media_url: editMediaUrl || null,
         status: targetStatus,
         scheduled_for: isoDate,
+        platforms: editingPost.platforms?.length ? editingPost.platforms : (selectedPlatforms.length ? selectedPlatforms : undefined),
         buffer_profile_ids: selectedProfiles,
         buffer_profile_platforms: Object.fromEntries(
           bufferProfiles
@@ -356,12 +364,15 @@ export default function MarketingSocialPage() {
     () => upcomingEvents.filter((event) => !event.is_promoted),
     [upcomingEvents],
   );
-  const editingBufferProfiles = useMemo(
-    () => editingPost
-      ? bufferProfiles.filter((profile) => editingPost.platforms.includes(profile.service))
-      : [],
-    [bufferProfiles, editingPost],
-  );
+  const editingBufferProfiles = useMemo(() => {
+    if (!editingPost) return [];
+    if (!editingPost.platforms || editingPost.platforms.length === 0) {
+      return bufferProfiles;
+    }
+    return bufferProfiles.filter((profile) =>
+      editingPost.platforms.includes(profile.service),
+    );
+  }, [bufferProfiles, editingPost]);
 
   return (
     <main className="page">
