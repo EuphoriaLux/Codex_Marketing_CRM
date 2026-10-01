@@ -5,6 +5,10 @@ import {
   EventCoachAvailability,
   HubEvent,
   LocationItem,
+  OfferEventDraft,
+  OnboardingStep,
+  Partner,
+  PartnerOffer,
   PaymentInItem,
   PaymentOutItem,
   PayrollItem,
@@ -43,6 +47,20 @@ export type TimelineResponse = {
 export type LocationsResponse = {
   items: LocationItem[];
 };
+
+export type LocationResponse = LocationItem;
+
+export type PartnerOffersResponse = {
+  items: PartnerOffer[];
+};
+
+export type PartnerOfferResponse = PartnerOffer;
+
+export type PartnerOnboardingResponse = {
+  items: OnboardingStep[];
+};
+
+export type OfferEventDraftResponse = OfferEventDraft;
 
 export type PaymentsInResponse = {
   items: PaymentInItem[];

@@ -81,6 +81,15 @@ export type LocationContact = {
   phone: string;
 };
 
+export type PartnerContact = {
+  id?: number;
+  name: string;
+  role?: string;
+  email?: string;
+  phone?: string;
+  isPrimary?: boolean;
+};
+
 export type LocationItem = {
   id: string;
   name: string;
@@ -108,6 +117,133 @@ export type LocationItem = {
   nextActionDate?: string;
   notes: string;
   tags: string[];
+
+  // Structured address
+  addressStreet?: string;
+  addressNumber?: string;
+  addressPostcode?: string;
+  addressTown?: string;
+  canton?: string;
+  latitude?: number;
+  longitude?: number;
+
+  // Logistics & venue policies
+  website?: string;
+  openingHours?: string;
+  blackoutNotes?: string;
+  houseRules?: string;
+
+  // Commercial terms & deal structure
+  minimumSpend?: number;
+  revenueSharePercent?: number;
+  depositAmount?: number;
+  echoVenueId?: number;
+
+  // Related data
+  contacts?: PartnerContact[];
+  offerCount?: number;
+  onboardingProgress?: {
+    done: number;
+    total: number;
+  };
+};
+
+export type Partner = LocationItem;
+
+export type OfferEventType =
+  | "speed_dating"
+  | "mixer"
+  | "activity"
+  | "themed"
+  | "quiz_night"
+  | "crush_cache";
+
+export type MultilingualText = {
+  en: string;
+  de: string;
+  fr: string;
+};
+
+export type PartnerOffer = {
+  id: string;
+  locationId: string;
+  name: string;
+  eventType: OfferEventType;
+  isActive: boolean;
+  weekdays: number[];
+  startTime?: string | null;
+  durationMinutes: number;
+  maxParticipants: number;
+  maxParticipantsM?: number | null;
+  maxParticipantsF?: number | null;
+  maxParticipantsNb?: number | null;
+  minAge: number;
+  maxAge: number;
+  registrationFee: number;
+  partnerCostNotes?: string;
+  title: MultilingualText;
+  description: MultilingualText;
+  hasFoodComponent: boolean;
+  allowPlusOnes: boolean;
+  spaceUsed?: string;
+  setupNotes?: string;
+  languages: ("en" | "de" | "fr")[];
+  updatedAt?: string;
+};
+
+export type OnboardingStepKey =
+  | "contact_made"
+  | "terms_agreed"
+  | "venue_visit"
+  | "photos"
+  | "house_rules"
+  | "test_event"
+  | "echo_venue_registered"
+  | "active";
+
+export type OnboardingStep = {
+  key: OnboardingStepKey;
+  label: string;
+  done: boolean;
+  doneAt: string | null;
+  doneBy: string;
+  notes: string;
+};
+
+export type OfferEventDraft = {
+  offerId: number;
+  partnerId: number;
+  suggestedWeekdays: number[];
+  suggestedStartTime: string | null;
+  fields: {
+    event_type: string;
+    location: string;
+    address_street: string;
+    address_number: string;
+    address_postcode: string;
+    address_town: string;
+    address: string;
+    canton: string;
+    latitude: number | null;
+    longitude: number | null;
+    duration_minutes: number;
+    max_participants: number;
+    max_participants_m: number | null;
+    max_participants_f: number | null;
+    max_participants_nb: number | null;
+    min_age: number;
+    max_age: number;
+    registration_fee: number;
+    has_food_component: boolean;
+    allow_plus_ones: boolean;
+    languages: string[];
+    title_en: string;
+    title_de: string;
+    title_fr: string;
+    description_en: string;
+    description_de: string;
+    description_fr: string;
+  };
 };
 
 export type PaymentStatus = "Paid" | "Pending" | "Overdue" | "Scheduled";

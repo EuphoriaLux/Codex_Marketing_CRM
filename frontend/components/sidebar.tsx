@@ -27,7 +27,7 @@ const navSections: NavSection[] = [
   {
     title: "Opérations & CRM",
     items: [
-      { href: "/locations", label: "Lieux & Salles", icon: "📍" },
+      { href: "/locations", label: "Partenaires", icon: "🤝" },
       { href: "/resources", label: "Ressources", icon: "📁" },
       { href: "/whatsapp", label: "WhatsApp Support", icon: "💬" },
       { href: "/partnership-admin", label: "Partenariats", icon: "🤝" },

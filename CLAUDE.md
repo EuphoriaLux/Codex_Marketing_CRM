@@ -36,7 +36,12 @@ There is no test runner configured — `npm test` does not exist.
 
 Pages consume this via `useHubData()`. Metrics shown on the dashboard are **derived client-side** in `deriveMetrics()` from the loaded requests/resources — they are not a separate endpoint.
 
-Mock-only entities (`locations`, `paymentsIn`, `paymentsOut`, `payroll`, `refunds`, `eventProfitability`) are still exposed on the context for typing compatibility, but they are hard-coded to empty arrays — the corresponding pages (`/locations`, `/accounting`) render blank until those endpoints are added to `lib/api/contracts.ts` and threaded into `fetchHubData()`. When adding a new domain entity, add it to `lib/types.ts`, the API contract types in `lib/api/contracts.ts`, the `fetchHubData()` parallel fetch, and the provider state — all four must stay in sync.
+### Live domain endpoints: Partners & Accounting
+Domain entities for Partners (`/locations` and `/locations/detail?id=`) and Accounting (`/accounting`) are **live against the Django API**, not mocks:
+- **Partners & Offers** (`lib/api/locations.ts` / `lib/api/partners.ts`): queries `/hub/locations` (CRUD + contacts), `/hub/locations/<id>/offers` (CRUD, duplicate, deactivate), `/hub/locations/<id>/onboarding` (fixed 8-step checklist), and `/hub/offers/<id>/event-draft` (prefilling the coach event form).
+- **FinOps & Accounting** (`lib/api/finance.ts`): queries `/hub/payments-in`, `/hub/payments-out`, `/hub/payroll`, and `/hub/refunds` (`{"items": [...]}` DRF envelopes with numeric `MoneyField` euro values).
+
+Pages fetch their domain data client-side with `apiGet`, `apiPost`, `apiPatch`, `apiDelete` from `lib/api/client.ts` using JWT Bearer authentication. When adding a new domain entity or route, ensure types in `lib/types.ts` and `lib/api/contracts.ts` match Django serializers in `hub/serializers*.py`. Dynamic detail pages must follow a query-parameter route (e.g. `/locations/detail?id=`) with `<Suspense>` to preserve compatibility with `output: "export"`.
 
 ### Authentication: two flows, one token store
 Both flows in `lib/api/client.ts` end up storing a JWT pair (`hub_access_token`, `hub_refresh_token`) in localStorage:
