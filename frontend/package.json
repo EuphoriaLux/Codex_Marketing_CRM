@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "npm run lint && next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:social": "node --experimental-strip-types --test lib/social-review.test.ts"
   },
   "dependencies": {
     "next": "15.1.4",

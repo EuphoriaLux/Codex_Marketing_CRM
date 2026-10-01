@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Panel } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
 import { StatusBanner } from "@/components/status-banner";
+import { SocialDeck } from "@/components/social-deck";
+import { defaultReviewProfiles, eligibleProfile, formatPostingTime, luxembourgInput, luxembourgIso, reviewBlocker, reviewTime } from "@/lib/social-review";
 import {
   createEventFacebookDrafts,
   expandPostToArticle,
@@ -25,8 +27,7 @@ import {
   SocialPostStatus,
 } from "@/lib/types";
 
-const LIVE: SocialPostStatus[] = ["approved", "scheduled"];
-const POLL_INTERVAL_MS = 5_000;
+const POLL_INTERVAL_MS = 30_000;
 
 const PILLARS: { value: SocialPillar; label: string; icon: string }[] = [
   { value: "event_recap", label: "Récap événement", icon: "🍷" },
@@ -78,27 +79,18 @@ const LANES: { key: string; title: string; statuses: SocialPostStatus[] }[] = [
   },
 ];
 
-function nextFriday1600(): string {
-  const d = new Date();
-  const day = d.getDay();
-  let delta = (5 - day + 7) % 7;
-  if (delta === 0 && d.getHours() >= 16) delta = 7;
-  d.setDate(d.getDate() + delta);
-  d.setHours(16, 0, 0, 0);
-  return d.toISOString();
-}
-
 function getWeekDays(referenceDate: Date = new Date()): { date: Date; label: string; dateStr: string }[] {
-  const curr = new Date(referenceDate);
-  const first = curr.getDate() - curr.getDay() + 1; // Monday
+  const curr = new Date(`${luxembourgInput(referenceDate.toISOString()).slice(0, 10)}T12:00:00Z`);
+  const first = curr.getUTCDate() - ((curr.getUTCDay() + 6) % 7);
   const days = [];
   const dayNames = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
   for (let i = 0; i < 7; i++) {
-    const day = new Date(curr.setDate(first + i));
+    const day = new Date(curr);
+    day.setUTCDate(first + i);
     days.push({
       date: day,
-      label: `${dayNames[i]} ${day.getDate()}/${day.getMonth() + 1}`,
+      label: `${dayNames[i]} ${day.getUTCDate()}/${day.getUTCMonth() + 1}`,
       dateStr: day.toISOString().split("T")[0],
     });
   }
@@ -141,12 +133,13 @@ export default function MarketingSocialPage() {
   const [editSchedule, setEditSchedule] = useState("");
   const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [expandingArticle, setExpandingArticle] = useState(false);
+  const editingLocked = !!editingPost && (!!editingPost.buffer_id || ["scheduled", "published", "failed"].includes(editingPost.status));
+  const approving = useRef(new Set<string>());
 
   const fetchFeed = useCallback(async () => {
     try {
       const res = await listSocialPosts();
-      setPosts((prev) => mergeById(prev, res.items));
-      setNotice(null);
+      setPosts(res.items);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur de chargement du planning";
       setNotice({ kind: "error", text: msg });
@@ -204,17 +197,17 @@ export default function MarketingSocialPage() {
       .catch(() => {});
   }, [fetchFeed, fetchUpcomingEvents]);
 
-  // Poll when posts sit in live Buffer states
-  const hasLive = useMemo(() => posts.some((p) => LIVE.includes(p.status)), [posts]);
+  // New automation drafts must appear even when the review board starts empty.
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!hasLive) return;
-    timerRef.current = setInterval(fetchFeed, POLL_INTERVAL_MS);
+    timerRef.current = setInterval(() => {
+      if (document.visibilityState === "visible") fetchFeed();
+    }, POLL_INTERVAL_MS);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [hasLive, fetchFeed]);
+  }, [fetchFeed]);
 
   // Handle batch generation trigger
   async function handleGenerateBatch(e: FormEvent) {
@@ -273,20 +266,19 @@ export default function MarketingSocialPage() {
     setEditingPost(post);
     setEditContent(post.content);
     setEditMediaUrl(post.media_url || "");
-    const dateVal = post.scheduled_for
-      ? new Date(post.scheduled_for).toISOString().slice(0, 16)
-      : new Date(nextFriday1600()).toISOString().slice(0, 16);
+    const proposed = reviewTime(post);
+    const dateVal = proposed ? luxembourgInput(proposed) : "";
     setEditSchedule(dateVal);
     const activeProfileIds = new Set(
       bufferProfiles
         .filter(
           (profile) =>
-            !profile.is_queue_paused && post.platforms.includes(profile.service),
+            eligibleProfile(profile) && (!post.platforms.length || post.platforms.includes(profile.service)),
         )
         .map((profile) => profile.id),
     );
     setSelectedProfiles(
-      (post.buffer_profile_ids || Array.from(activeProfileIds)).filter((id) => activeProfileIds.has(id)),
+      (post.buffer_profile_ids?.length ? post.buffer_profile_ids : defaultReviewProfiles(post, bufferProfiles)?.map((p) => p.id) || []).filter((id) => activeProfileIds.has(id)),
     );
   }
 
@@ -299,7 +291,7 @@ export default function MarketingSocialPage() {
     setSubmitting(true);
     setNotice(null);
     try {
-      const isoDate = editSchedule ? new Date(editSchedule).toISOString() : null;
+      const isoDate = editSchedule ? luxembourgIso(editSchedule) : null;
       const selectedPlatforms = Array.from(
         new Set(
           bufferProfiles
@@ -307,11 +299,13 @@ export default function MarketingSocialPage() {
             .map((profile) => profile.service),
         ),
       );
-      const res = await updateSocialPost(editingPost.id, {
+      let res = await updateSocialPost(editingPost.id, {
         content: editContent,
         media_url: editMediaUrl || null,
-        status: targetStatus,
+        media_urls: editingPost.media_urls?.length === 1 && editMediaUrl !== editingPost.media_url ? (editMediaUrl ? [editMediaUrl] : []) : undefined,
+        status: targetStatus === "scheduled" && editingPost.review_fingerprint ? "pending_review" : targetStatus,
         scheduled_for: isoDate,
+        edit_fingerprint: editingPost.review_fingerprint,
         platforms: editingPost.platforms?.length ? editingPost.platforms : (selectedPlatforms.length ? selectedPlatforms : undefined),
         buffer_profile_ids: selectedProfiles,
         buffer_profile_platforms: Object.fromEntries(
@@ -321,6 +315,14 @@ export default function MarketingSocialPage() {
         ),
       });
 
+      if (targetStatus === "scheduled" && editingPost.review_fingerprint) {
+        setEditingPost(res.post);
+        setPosts((current) => current.map((item) => item.id === res.post.id ? res.post : item));
+        res = await updateSocialPost(res.post.id, {
+          status: "scheduled", review_fingerprint: res.post.review_fingerprint,
+          approval_mode: "hub",
+        });
+      }
       setPosts((prev) =>
         prev.map((p) => (p.id === editingPost.id ? res.post : p)),
       );
@@ -338,6 +340,31 @@ export default function MarketingSocialPage() {
       await fetchFeed();
       setNotice({ kind: "error", text: msg });
     } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function approveReadyPost(post: SocialPost) {
+    if (approving.current.has(post.id) || reviewBlocker(post, bufferProfiles)) return;
+    approving.current.add(post.id);
+    setSubmitting(true);
+    setNotice(null);
+    const selected = defaultReviewProfiles(post, bufferProfiles)!;
+    try {
+      const res = await updateSocialPost(post.id, {
+        status: "scheduled", scheduled_for: reviewTime(post),
+        review_fingerprint: post.review_fingerprint, approval_mode: "hub",
+        buffer_profile_ids: selected.map((p) => p.id),
+        buffer_profile_platforms: Object.fromEntries(selected.map((p) => [p.id, p.service])),
+      });
+      setPosts((current) => current.map((item) => item.id === post.id ? res.post : item));
+      setNotice({ kind: "success", text: `Publication validée et envoyée à Buffer pour ${formatPostingTime(res.post.scheduled_for!)} (Luxembourg).` });
+      if (post.source_event_id) await fetchUpcomingEvents();
+    } catch (error) {
+      await fetchFeed();
+      setNotice({ kind: "error", text: error instanceof Error ? error.message : "La programmation n'a pas abouti. Vérifiez l'état dans Buffer avant de réessayer." });
+    } finally {
+      approving.current.delete(post.id);
       setSubmitting(false);
     }
   }
@@ -379,7 +406,7 @@ export default function MarketingSocialPage() {
       <SectionHeader
         eyebrow="📢 Section Marketing • hub.crush.lu"
         title="Planification des Réseaux Sociaux"
-        description="Repérez les événements non promus, reprenez leur contenu sans IA, puis validez leur programmation Facebook via Buffer."
+        description="Vérifiez les visuels, le texte, les comptes et l'horaire proposés. Un clic sur Valider et programmer envoie la publication à Buffer. Les nouveaux brouillons apparaissent automatiquement ici."
       />
 
       {notice && (
@@ -664,6 +691,7 @@ export default function MarketingSocialPage() {
               <StatusBadge status={editingPost.status} />
             </div>
 
+            <SocialDeck post={editingPost} />
             {editingPost.source_event_title && (
               <p style={{ margin: "-0.4rem 0 1rem", color: "#93c5fd", fontSize: "0.85rem" }}>
                 🎟️ Contenu repris de l’événement : {editingPost.source_event_title}
@@ -672,52 +700,58 @@ export default function MarketingSocialPage() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "#cbd5e1", marginBottom: "0.3rem" }}>
+                <label htmlFor="social-caption" style={{ display: "block", fontSize: "0.85rem", color: "#cbd5e1", marginBottom: "0.3rem" }}>
                   Texte de la publication & Hashtags
                 </label>
                 <textarea
+                  id="social-caption"
                   className="input"
                   rows={5}
                   value={editContent}
+                  readOnly={editingLocked}
                   onChange={(e) => setEditContent(e.target.value)}
                   style={{ width: "100%", fontFamily: "inherit" }}
                 />
               </div>
 
-              <div>
+              {(editingPost.media_urls?.length || 0) <= 1 && <div>
                 <label style={{ display: "block", fontSize: "0.85rem", color: "#cbd5e1", marginBottom: "0.3rem" }}>
-                  URL de l'image (Requis pour l'API Buffer)
+                  Image de couverture
                 </label>
                 <input
                   type="url"
                   className="input"
                   value={editMediaUrl}
+                  disabled={editingLocked}
                   onChange={(e) => setEditMediaUrl(e.target.value)}
                   placeholder="https://media.crush.lu/events/photo-speed-dating.jpg"
                   style={{ width: "100%" }}
                 />
                 <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.25rem" }}>
-                  💡 L'API Buffer requiert une URL d'image publique (ex: Azure Blob Storage ou média public de l'événement).
+                  Utilisez une image publique qui restera accessible jusqu'à la publication.
                 </p>
                 {editMediaUrl && (
                   <div style={{ marginTop: "0.5rem", borderRadius: "8px", overflow: "hidden", maxHeight: "150px" }}>
                     <Image src={editMediaUrl} alt="Aperçu visuel" width={600} height={150} unoptimized style={{ width: "100%", height: "150px", objectFit: "cover" }} onError={(e) => (e.currentTarget.style.display = "none")} />
                   </div>
                 )}
-              </div>
+              </div>}
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.85rem", color: "#cbd5e1", marginBottom: "0.3rem" }}>
-                    Date et Heure de programmation
+                  <label htmlFor="social-posting-time" style={{ display: "block", fontSize: "0.85rem", color: "#cbd5e1", marginBottom: "0.3rem" }}>
+                    Date et heure au Luxembourg
                   </label>
                   <input
+                    id="social-posting-time"
                     type="datetime-local"
                     className="input"
                     value={editSchedule}
+                    disabled={editingLocked}
                     onChange={(e) => setEditSchedule(e.target.value)}
                     style={{ width: "100%" }}
                   />
+                  <p style={{ fontSize: "0.8rem", color: "#a1a1aa" }}>{editingPost.posting_suggestion?.reason} · Europe/Luxembourg</p>
                 </div>
 
                 <div>
@@ -735,20 +769,20 @@ export default function MarketingSocialPage() {
                         <input
                           type="checkbox"
                           checked={selectedProfiles.includes(bp.id)}
-                          disabled={bp.is_queue_paused}
+                          disabled={editingLocked || !eligibleProfile(bp)}
                           onChange={(e) => {
                             if (e.target.checked) setSelectedProfiles([...selectedProfiles, bp.id]);
                             else setSelectedProfiles(selectedProfiles.filter((id) => id !== bp.id));
                           }}
                         />
-                        {bp.formatted_username}{bp.is_queue_paused ? " (file en pause)" : ""}
+                        {bp.formatted_username}{!eligibleProfile(bp) ? " (indisponible)" : ""}
                       </label>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "space-between", alignItems: "center", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
                 <button
                   type="button"
                   className="button button-secondary"
@@ -759,16 +793,16 @@ export default function MarketingSocialPage() {
                   {expandingArticle ? "Expansion..." : "📰 Convertir en Article (Publications)"}
                 </button>
 
-                <div style={{ display: "flex", gap: "0.5rem" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
                   <button type="button" className="button button-secondary" onClick={() => setEditingPost(null)}>
                     Fermer
                   </button>
-                  <button type="button" className="button button-secondary" onClick={() => handleSaveAndSchedule("pending_review")}>
+                  {!editingLocked && <button type="button" className="button button-secondary" disabled={submitting} onClick={() => handleSaveAndSchedule("pending_review")}>
                     Mettre en révision
-                  </button>
-                  <button type="button" className="button button-primary" onClick={() => handleSaveAndSchedule("scheduled")} disabled={submitting || selectedProfiles.length === 0} style={{ background: "#10b981" }}>
+                  </button>}
+                  {!editingLocked && <button type="button" className="button button-primary" onClick={() => handleSaveAndSchedule("scheduled")} disabled={submitting || selectedProfiles.length === 0} style={{ background: "#10b981" }}>
                     🚀 Valider & Programmer (Buffer)
-                  </button>
+                  </button>}
                 </div>
               </div>
             </div>
@@ -794,13 +828,11 @@ export default function MarketingSocialPage() {
                     lanePosts.map((post) => (
                       <div
                         key={post.id}
-                        onClick={() => openEditModal(post)}
                         style={{
                           background: "rgba(255,255,255,0.03)",
                           padding: "1rem",
                           borderRadius: "8px",
                           border: "1px solid rgba(255,255,255,0.08)",
-                          cursor: "pointer",
                           transition: "transform 0.15s ease, border-color 0.15s ease",
                         }}
                       >
@@ -813,7 +845,8 @@ export default function MarketingSocialPage() {
                           </span>
                         </div>
 
-                        <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", fontWeight: 500, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        <SocialDeck post={post} />
+                        <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", fontWeight: 500, whiteSpace: "pre-wrap", maxHeight: 220, overflowY: "auto" }}>
                           {post.content}
                         </p>
 
@@ -823,16 +856,32 @@ export default function MarketingSocialPage() {
                           </div>
                         )}
 
-                        {post.media_url && (
-                          <div style={{ fontSize: "0.75rem", color: "#38bdf8", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                            🖼️ Image rattachée
+                        {post.source_metadata?.source_url && (
+                          <p style={{ fontSize: "0.8rem", marginBottom: "0.5rem" }}>
+                            Source : <a href={post.source_metadata.source_url} target="_blank" rel="noopener noreferrer">{post.source_metadata.title || "Voir la source"}</a>
+                            {post.source_metadata.checked_at && <> · Vérifiée le {new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Luxembourg", dateStyle: "short" }).format(new Date(post.source_metadata.checked_at))}</>}
+                          </p>
+                        )}
+
+                        {!post.buffer_id && ["draft", "pending_review", "approved"].includes(post.status) && (
+                          <div style={{ marginTop: "0.75rem", display: "grid", gap: "0.45rem" }}>
+                            <strong style={{ fontSize: "0.85rem" }}>Horaire proposé : {reviewTime(post) ? `${formatPostingTime(reviewTime(post)!)} · Luxembourg` : "À choisir"}</strong>
+                            <span style={{ fontSize: "0.75rem", color: "#a1a1aa" }}>{post.posting_suggestion?.reason}</span>
+                            <span style={{ fontSize: "0.8rem" }}>Comptes : {defaultReviewProfiles(post, bufferProfiles)?.map((p) => `${p.service} · ${p.formatted_username}`).join(" / ") || "À choisir"}</span>
+                            <button type="button" className="button button-primary" disabled={submitting || !!reviewBlocker(post, bufferProfiles)} onClick={() => approveReadyPost(post)}>
+                              {approving.current.has(post.id) ? "Envoi à Buffer…" : "Valider et programmer"}
+                            </button>
+                            {reviewBlocker(post, bufferProfiles) && <span style={{ fontSize: "0.75rem", color: "#fbbf24" }}>{bufferError || reviewBlocker(post, bufferProfiles)}</span>}
                           </div>
                         )}
+                        <button type="button" className="button button-secondary" onClick={() => openEditModal(post)} style={{ marginTop: "0.65rem" }}>
+                          {post.buffer_id || ["scheduled", "published"].includes(post.status) ? "Voir la publication" : "Modifier le texte ou l'horaire"}
+                        </button>
 
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem", paddingTop: "0.5rem", borderTop: "1px dashed rgba(255,255,255,0.1)" }}>
                           <StatusBadge status={post.status} />
                           <span style={{ fontSize: "0.75rem", color: "#71717a" }}>
-                            {post.scheduled_for ? new Date(post.scheduled_for).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "Non programmé"}
+                            {post.scheduled_for ? `${formatPostingTime(post.scheduled_for)} · Luxembourg` : "Non programmé"}
                           </span>
                         </div>
                       </div>
@@ -845,10 +894,10 @@ export default function MarketingSocialPage() {
         </div>
       ) : (
         /* Calendar Tab */
-        <Panel title="🗓️ Planning Hebdomadaire des Envois" description="Vue synthétique des publications programmées pour la semaine">
+        <Panel title="🗓️ Planning Hebdomadaire des Envois" description="Horaires proposés et publications confirmées dans Buffer pour la semaine">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", overflowX: "auto", marginTop: "1rem" }}>
             {weekDays.map((day) => {
-              const dayPosts = posts.filter((p) => p.scheduled_for && p.scheduled_for.startsWith(day.dateStr));
+              const dayPosts = posts.filter((p) => p.scheduled_for && luxembourgInput(p.scheduled_for).startsWith(day.dateStr));
               return (
                 <div
                   key={day.dateStr}
@@ -884,12 +933,14 @@ export default function MarketingSocialPage() {
                           }}
                         >
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
-                            <span>⏰ {new Date(p.scheduled_for!).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</span>
+                            <span>⏰ {luxembourgInput(p.scheduled_for!).slice(11)} · Luxembourg</span>
                             <span>{p.language.toUpperCase()}</span>
                           </div>
                           <p style={{ margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {p.content}
                           </p>
+                          <StatusBadge status={p.status} />
+                          {!p.buffer_id && <span> · Horaire proposé</span>}
                         </div>
                       ))
                     )}
