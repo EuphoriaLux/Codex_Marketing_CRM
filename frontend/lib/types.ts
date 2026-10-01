@@ -263,6 +263,10 @@ export type BufferProfile = {
   avatar_url?: string;
   formatted_username: string;
   is_queue_paused?: boolean;
+  is_disconnected?: boolean;
+  is_locked?: boolean;
+  timezone?: string;
+  posting_schedule?: { day: string; paused: boolean; times: string[] }[];
 };
 
 export type SocialPost = {
@@ -279,6 +283,26 @@ export type SocialPost = {
   hook: string;
   content: string;
   media_url: string | null;
+  media_urls?: string[];
+  generation_key?: string | null;
+  source_metadata?: {
+    posting_date?: string;
+    source_url?: string;
+    title?: string;
+    checked_at?: string;
+    event_date?: string | null;
+    region?: string;
+    first_party?: boolean;
+    data_period?: string | null;
+    posting_reason?: string;
+  };
+  review_fingerprint?: string;
+  posting_suggestion?: {
+    scheduled_for: string | null;
+    timezone: string;
+    latest_before: string | null;
+    reason: string;
+  };
   status: SocialPostStatus;
   scheduled_for: string | null;
   buffer_id: string | null;

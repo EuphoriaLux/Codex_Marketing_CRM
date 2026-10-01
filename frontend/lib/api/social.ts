@@ -95,11 +95,15 @@ export function updateSocialPost(
   payload: Partial<{
     content: string;
     media_url: string | null;
+    media_urls: string[];
     status: SocialPostStatus;
     scheduled_for: string | null;
     buffer_profile_ids?: string[];
     buffer_profile_platforms?: Record<string, SocialPlatform>;
     platforms?: SocialPlatform[];
+    review_fingerprint?: string;
+    edit_fingerprint?: string;
+    approval_mode?: "hub";
   }>,
 ) {
   return apiPatch<SocialPostResponse>(`/hub/social/posts/${id}`, payload);
