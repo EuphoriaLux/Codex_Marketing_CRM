@@ -4,9 +4,11 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { exchangeCode } from "@/lib/api/client";
+import { useHubData } from "@/lib/hub-provider";
 
 function CallbackInner() {
   const router = useRouter();
+  const { refresh } = useHubData();
   const params = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +19,8 @@ function CallbackInner() {
       return;
     }
     exchangeCode(code)
-      .then(() => {
+      .then(async () => {
+        await refresh();
         // Scrub the code from URL history before any further navigation
         // happens — the code is single-use and already redeemed, but it's
         // good hygiene to not leave it sitting in the browser address bar
@@ -28,7 +31,7 @@ function CallbackInner() {
         router.replace("/");
       })
       .catch(() => setError("Sign-in failed. The code may have expired."));
-  }, [params, router]);
+  }, [params, router, refresh]);
 
   return (
     <main className="page">

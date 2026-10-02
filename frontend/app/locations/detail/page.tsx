@@ -6,7 +6,6 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { StatusBanner } from "@/components/status-banner";
 import { fetchLocation, fetchOffers } from "@/lib/api/locations";
 import type { LocationItem, PartnerOffer } from "@/lib/types";
-import { EventDraftModal } from "../_components/event-draft-modal";
 import { LinkedEventsTab } from "../_components/linked-events-tab";
 import { OffersTab } from "../_components/offers-tab";
 import { OnboardingTab } from "../_components/onboarding-tab";
@@ -44,9 +43,6 @@ function PartnerDetailContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Quick event draft trigger from linked events
-  const [activeDraft, setActiveDraft] = useState<import("@/lib/types").OfferEventDraft | null>(null);
-  const [draftOfferName, setDraftOfferName] = useState("");
 
   const handleOffersCountUpdated = useCallback((count: number) => {
     setOffers((prev) => (prev.length !== count ? [...prev] : prev));
@@ -82,7 +78,7 @@ function PartnerDetailContent() {
         setError(null);
         const [locData, offersData] = await Promise.all([
           fetchLocation(partnerId as string),
-          fetchOffers(partnerId as string).catch(() => []),
+          fetchOffers(partnerId as string),
         ]);
         if (mounted) {
           setPartner(locData);
@@ -214,27 +210,10 @@ function PartnerDetailContent() {
           <LinkedEventsTab
             partner={partner}
             offers={offers}
-            onCreateEventFromOffer={async (offer) => {
-              try {
-                const { fetchOfferEventDraft } = await import("@/lib/api/locations");
-                const draft = await fetchOfferEventDraft(offer.id);
-                setActiveDraft(draft);
-                setDraftOfferName(offer.name);
-              } catch {
-                alert("Impossible de charger le projet d'événement.");
-              }
-            }}
           />
         )}
       </div>
 
-      {activeDraft && (
-        <EventDraftModal
-          draft={activeDraft}
-          offerName={draftOfferName}
-          onClose={() => setActiveDraft(null)}
-        />
-      )}
     </main>
   );
 }

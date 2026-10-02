@@ -3,9 +3,11 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buildSsoUrl, login } from "@/lib/api/client";
+import { useHubData } from "@/lib/hub-provider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { refresh } = useHubData();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +19,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(username, password);
+      await refresh();
       router.replace("/");
     } catch {
       setError("Invalid credentials.");

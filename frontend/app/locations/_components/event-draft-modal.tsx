@@ -63,7 +63,7 @@ export function EventDraftModal({ draft, offerName, onClose }: Props) {
         <div className="partner-modal-form">
           <div className="status-banner success" style={{ marginBottom: "1rem" }}>
             ✓ Les caractéristiques de l'offre et du partenaire sont prêtes pour le formulaire coach.
-            Aucun événement n'a encore été publié en base.
+            Aucun brouillon n'est encore enregistré. Complétez la date et les paramètres dans le formulaire Crush.lu, puis enregistrez l'événement.
           </div>
 
           <div className="form-section">

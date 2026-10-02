@@ -10,6 +10,7 @@ import {
   OfferEventDraft,
   OnboardingStep,
   PartnerOffer,
+  PartnerLinkedEvent,
 } from "@/lib/types";
 
 const CRUSH_BASE_URL =
@@ -26,6 +27,27 @@ export async function fetchLocations(): Promise<LocationItem[]> {
 
 export async function fetchLocation(id: string | number): Promise<LocationItem> {
   return apiGet<LocationItem>(`/hub/locations/${id}`);
+}
+
+export async function fetchPartnerEvents(id: string): Promise<PartnerLinkedEvent[]> {
+  const result = await apiGet<{ items: PartnerLinkedEvent[] }>(`/hub/locations/${id}/events`);
+  return result.items;
+}
+
+export function fetchEventPartnerLink(id: string): Promise<PartnerLinkedEvent> {
+  return apiGet<PartnerLinkedEvent>(`/hub/events/${id}/partner-link`);
+}
+
+export function linkEventPartner(
+  id: string,
+  partnerId: string,
+  offerId: string | null,
+): Promise<PartnerLinkedEvent> {
+  return apiPatch<PartnerLinkedEvent>(`/hub/events/${id}/partner-link`, { partnerId, offerId });
+}
+
+export function buildEventAdminUrl(id: string): string {
+  return `${CRUSH_BASE_URL.replace(/\/+$/, "")}/crush-admin/crush_lu/meetupevent/${encodeURIComponent(id)}/change/`;
 }
 
 export async function createLocation(
@@ -128,39 +150,11 @@ export async function fetchOfferEventDraft(
 }
 
 /**
- * Generates the URL to open the Coach Event form on Crush.lu with the prefilled
- * fields from the event draft.
+ * Opens the event form using the current server-side offer preset.
  */
 export function buildCoachEventUrl(draft: OfferEventDraft): string {
   const base = CRUSH_BASE_URL.replace(/\/+$/, "");
-  const params = new URLSearchParams();
-
-  params.set("offer_id", String(draft.offerId));
-  params.set("partner_id", String(draft.partnerId));
-
-  const f = draft.fields;
-  if (f.event_type) params.set("event_type", f.event_type);
-  if (f.location) params.set("location", f.location);
-  if (f.address_street) params.set("address_street", f.address_street);
-  if (f.address_number) params.set("address_number", f.address_number);
-  if (f.address_postcode) params.set("address_postcode", f.address_postcode);
-  if (f.address_town) params.set("address_town", f.address_town);
-  if (f.canton) params.set("canton", f.canton);
-  if (f.duration_minutes) params.set("duration_minutes", String(f.duration_minutes));
-  if (f.max_participants) params.set("max_participants", String(f.max_participants));
-  if (f.max_participants_m !== null && f.max_participants_m !== undefined) {
-    params.set("max_participants_m", String(f.max_participants_m));
-  }
-  if (f.max_participants_f !== null && f.max_participants_f !== undefined) {
-    params.set("max_participants_f", String(f.max_participants_f));
-  }
-  if (f.registration_fee !== undefined) {
-    params.set("registration_fee", String(f.registration_fee));
-  }
-  if (f.title_fr) params.set("title_fr", f.title_fr);
-  if (f.title_en) params.set("title_en", f.title_en);
-  if (draft.suggestedStartTime) params.set("suggested_start_time", draft.suggestedStartTime);
-
-  // Link to the coach events add page or admin meetupevent add form
-  return `${base}/admin/crush_lu/meetupevent/add/?${params.toString()}`;
+  const params = new URLSearchParams({ offer_id: String(draft.offerId) });
+  // Django resolves the preset from the offer ID and persists both relationships.
+  return `${base}/crush-admin/crush_lu/meetupevent/add/?${params.toString()}`;
 }
