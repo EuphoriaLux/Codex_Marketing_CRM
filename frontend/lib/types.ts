@@ -90,6 +90,25 @@ export type PartnerContact = {
   isPrimary?: boolean;
 };
 
+export type PartnerLinkedEvent = {
+  id: string;
+  title: string;
+  dateTime: string;
+  durationMinutes: number;
+  eventType: string;
+  location: string;
+  partnerId: string | null;
+  offerId: string | null;
+  offerName: string;
+  isPublished: boolean;
+  isCancelled: boolean;
+  maxParticipants: number;
+  seatHolders: number;
+  applications: number;
+  waitlisted: number;
+  attended: number;
+};
+
 export type LocationItem = {
   id: string;
   name: string;

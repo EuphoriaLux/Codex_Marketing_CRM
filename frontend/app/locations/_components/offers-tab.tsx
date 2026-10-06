@@ -405,11 +405,11 @@ export function OffersTab({ partner, onOffersCountUpdated }: Props) {
                   <button
                     type="button"
                     className="button action-create-event"
-                    disabled={draftLoadingId === offer.id}
+                    disabled={draftLoadingId === offer.id || !offer.isActive || ["Paused", "Archived"].includes(partner.partnershipStage)}
                     onClick={() => handleCreateEventFromOffer(offer)}
-                    title="Générer un brouillon MeetupEvent et lier au formulaire coach"
+                    title="Prévisualiser les paramètres avant de compléter le formulaire d'événement"
                   >
-                    {draftLoadingId === offer.id ? "Chargement..." : "⚡ Créer un événement"}
+                    {draftLoadingId === offer.id ? "Chargement..." : "Préparer un événement"}
                   </button>
 
                   <div className="offer-secondary-actions">

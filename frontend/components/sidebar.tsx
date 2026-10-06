@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useHubData } from "@/lib/hub-provider";
 
 type NavItem = { href: string; label: string; icon: string };
 type NavSection = { title: string; items: NavItem[] };
@@ -58,6 +59,7 @@ const navSections: NavSection[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { authenticated, loading } = useHubData();
 
   return (
     <aside className="sidebar">
@@ -103,7 +105,7 @@ export function Sidebar() {
         </Link>
         <div className="sidebar-foot">
           <strong>🔒 Session sécurisée</strong>
-          <p>Identifiez-vous via Crush.lu pour synchroniser vos données.</p>
+          <p>{loading ? "Vérification de la session…" : authenticated ? "Votre session est connectée au service Crush.lu." : "Identifiez-vous via Crush.lu pour synchroniser vos données."}</p>
         </div>
       </div>
     </aside>
