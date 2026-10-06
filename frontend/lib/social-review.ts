@@ -60,6 +60,7 @@ export function reviewBlocker(post: SocialPost, profiles: BufferProfile[]): stri
   if (!time || !Number.isFinite(Date.parse(time)) || Date.parse(time) <= Date.now()) return post.posting_suggestion?.reason || "Choisissez un horaire futur.";
   const selected = defaultReviewProfiles(post, profiles);
   if (!selected) return "Choisissez les comptes de publication.";
+  if (post.media_type === "video" && selected.some(p => !["instagram", "facebook"].includes(p.service))) return "Les vidéos sont disponibles pour Instagram et Facebook.";
   if (selected.some((p) => p.service === "instagram") && !(post.media_urls?.length || post.media_url)) return "Instagram nécessite une image.";
   return null;
 }

@@ -112,6 +112,19 @@ function StatusBadge({ status }: { status: SocialPostStatus }) {
 export default function MarketingSocialPage() {
   const [activeTab, setActiveTab] = useState<"kanban" | "calendar">("kanban");
   const [posts, setPosts] = useState<SocialPost[]>([]);
+  const [reviewedVideos, setReviewedVideos] = useState<Record<string, boolean>>({});
+  const [playableVideos, setPlayableVideos] = useState<Record<string, boolean>>({});
+  const videoKey = (post: SocialPost) => `${post.id}:${post.review_fingerprint}`;
+  const playbackKey = (post: SocialPost) => `${post.id}:${post.media_url}`;
+  const videoReady = (post: SocialPost, ready: boolean) => setPlayableVideos(current => ({...current, [playbackKey(post)]:ready}));
+  const videoReviewed = (post: SocialPost) => post.media_type !== "video" || (!!reviewedVideos[videoKey(post)] && !!playableVideos[playbackKey(post)]);
+  const videoConfirmation = (post: SocialPost) => post.media_type === "video" ? (
+    <label style={{ display: "block", margin: "0.5rem 0" }}>
+      <input type="checkbox" disabled={!playableVideos[playbackKey(post)]} checked={!!reviewedVideos[videoKey(post)]}
+        onChange={e => setReviewedVideos(current => ({...current, [videoKey(post)]:e.target.checked}))} />
+      {" "}J’ai visionné la vidéo et vérifié le texte.
+    </label>
+  ) : null;
   const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([]);
   const [bufferError, setBufferError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -284,6 +297,7 @@ export default function MarketingSocialPage() {
 
   async function handleSaveAndSchedule(targetStatus: SocialPostStatus) {
     if (!editingPost) return;
+    if (targetStatus === "scheduled" && !videoReviewed(editingPost)) return;
     if (targetStatus === "scheduled" && selectedProfiles.length === 0) {
       setNotice({ kind: "error", text: "Sélectionnez au moins un compte Buffer avant de programmer." });
       return;
@@ -318,9 +332,14 @@ export default function MarketingSocialPage() {
       if (targetStatus === "scheduled" && editingPost.review_fingerprint) {
         setEditingPost(res.post);
         setPosts((current) => current.map((item) => item.id === res.post.id ? res.post : item));
+        if (editingPost.media_type === "video" && res.post.review_fingerprint !== editingPost.review_fingerprint) {
+          setNotice({kind:"success", text:"Modifications enregistrées. Vérifiez à nouveau la vidéo et le texte avant de programmer."});
+          return;
+        }
         res = await updateSocialPost(res.post.id, {
           status: "scheduled", review_fingerprint: res.post.review_fingerprint,
           approval_mode: "hub",
+          video_reviewed: videoReviewed(res.post),
         });
       }
       setPosts((prev) =>
@@ -345,6 +364,7 @@ export default function MarketingSocialPage() {
   }
 
   async function approveReadyPost(post: SocialPost) {
+    if (!videoReviewed(post)) return;
     if (approving.current.has(post.id) || reviewBlocker(post, bufferProfiles)) return;
     approving.current.add(post.id);
     setSubmitting(true);
@@ -354,6 +374,7 @@ export default function MarketingSocialPage() {
       const res = await updateSocialPost(post.id, {
         status: "scheduled", scheduled_for: reviewTime(post),
         review_fingerprint: post.review_fingerprint, approval_mode: "hub",
+        video_reviewed: videoReviewed(post),
         buffer_profile_ids: selected.map((p) => p.id),
         buffer_profile_platforms: Object.fromEntries(selected.map((p) => [p.id, p.service])),
       });
@@ -691,7 +712,8 @@ export default function MarketingSocialPage() {
               <StatusBadge status={editingPost.status} />
             </div>
 
-            <SocialDeck post={editingPost} />
+            <SocialDeck post={editingPost} onVideoReady={ready => videoReady(editingPost, ready)} />
+            {videoConfirmation(editingPost)}
             {editingPost.source_event_title && (
               <p style={{ margin: "-0.4rem 0 1rem", color: "#93c5fd", fontSize: "0.85rem" }}>
                 🎟️ Contenu repris de l’événement : {editingPost.source_event_title}
@@ -714,7 +736,7 @@ export default function MarketingSocialPage() {
                 />
               </div>
 
-              {(editingPost.media_urls?.length || 0) <= 1 && <div>
+              {editingPost.media_type !== "video" && (editingPost.media_urls?.length || 0) <= 1 && <div>
                 <label style={{ display: "block", fontSize: "0.85rem", color: "#cbd5e1", marginBottom: "0.3rem" }}>
                   Image de couverture
                 </label>
@@ -800,7 +822,7 @@ export default function MarketingSocialPage() {
                   {!editingLocked && <button type="button" className="button button-secondary" disabled={submitting} onClick={() => handleSaveAndSchedule("pending_review")}>
                     Mettre en révision
                   </button>}
-                  {!editingLocked && <button type="button" className="button button-primary" onClick={() => handleSaveAndSchedule("scheduled")} disabled={submitting || selectedProfiles.length === 0} style={{ background: "#10b981" }}>
+                  {!editingLocked && <button type="button" className="button button-primary" onClick={() => handleSaveAndSchedule("scheduled")} disabled={submitting || selectedProfiles.length === 0 || !videoReviewed(editingPost)} style={{ background: "#10b981" }}>
                     🚀 Valider & Programmer (Buffer)
                   </button>}
                 </div>
@@ -845,7 +867,7 @@ export default function MarketingSocialPage() {
                           </span>
                         </div>
 
-                        <SocialDeck post={post} />
+                        <SocialDeck post={post} onVideoReady={ready => videoReady(post, ready)} />
                         <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", fontWeight: 500, whiteSpace: "pre-wrap", maxHeight: 220, overflowY: "auto" }}>
                           {post.content}
                         </p>
@@ -868,7 +890,8 @@ export default function MarketingSocialPage() {
                             <strong style={{ fontSize: "0.85rem" }}>Horaire proposé : {reviewTime(post) ? `${formatPostingTime(reviewTime(post)!)} · Luxembourg` : "À choisir"}</strong>
                             <span style={{ fontSize: "0.75rem", color: "#a1a1aa" }}>{post.posting_suggestion?.reason}</span>
                             <span style={{ fontSize: "0.8rem" }}>Comptes : {defaultReviewProfiles(post, bufferProfiles)?.map((p) => `${p.service} · ${p.formatted_username}`).join(" / ") || "À choisir"}</span>
-                            <button type="button" className="button button-primary" disabled={submitting || !!reviewBlocker(post, bufferProfiles)} onClick={() => approveReadyPost(post)}>
+                            {videoConfirmation(post)}
+                            <button type="button" className="button button-primary" disabled={submitting || !!reviewBlocker(post, bufferProfiles) || !videoReviewed(post)} onClick={() => approveReadyPost(post)}>
                               {approving.current.has(post.id) ? "Envoi à Buffer…" : "Valider et programmer"}
                             </button>
                             {reviewBlocker(post, bufferProfiles) && <span style={{ fontSize: "0.75rem", color: "#fbbf24" }}>{bufferError || reviewBlocker(post, bufferProfiles)}</span>}

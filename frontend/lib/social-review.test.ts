@@ -26,6 +26,12 @@ test("DST missing or ambiguous local times require explicit correction", () => {
   assert.throws(() => luxembourgIso("2026-10-25T02:30"), /deux fois/);
 });
 
+test("video approvals require supported, resolved channels", () => {
+  const video = {...post, media_type:"video", media_urls:[], media_url:"https://cdn.crush.lu/clip.mp4"} as SocialPost;
+  assert.equal(reviewBlocker(video, profiles), null);
+  assert.match(reviewBlocker({...video, platforms:["linkedin"]}, [{id:"li",service:"linkedin",formatted_username:"Crush"}])!, /Instagram et Facebook/);
+});
+
 test("empty saved account list defaults to one connected account per platform", () => {
   assert.deepEqual(defaultReviewProfiles(post, profiles)?.map((p) => p.id), ["ig", "fb"]);
   assert.equal(reviewBlocker(post, profiles), null);
