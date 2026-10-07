@@ -439,6 +439,7 @@ export type SocialPost = {
   content: string;
   media_url: string | null;
   media_urls?: string[];
+  media_type?: "image" | "video";
   generation_key?: string | null;
   source_metadata?: {
     posting_date?: string;

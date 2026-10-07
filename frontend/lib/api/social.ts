@@ -104,6 +104,7 @@ export function updateSocialPost(
     review_fingerprint?: string;
     edit_fingerprint?: string;
     approval_mode?: "hub";
+    video_reviewed?: boolean;
   }>,
 ) {
   return apiPatch<SocialPostResponse>(`/hub/social/posts/${id}`, payload);
