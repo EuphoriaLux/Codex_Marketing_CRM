@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { safeHttpUrl } from "@/lib/safe-url";
 import type { SocialPost } from "@/lib/types";
 
 export function SocialDeck({ post, onVideoReady }: { post: SocialPost; onVideoReady?: (ready: boolean) => void }) {
@@ -20,7 +21,7 @@ export function SocialDeck({ post, onVideoReady }: { post: SocialPost; onVideoRe
         Votre navigateur ne peut pas lire cette vidéo.
       </video>
       {failedVideo && failedVideo === post.media_url && <p role="alert">Impossible de lire la vidéo. Réessayez avant de la valider.</p>}
-      <a href={post.media_url || undefined} target="_blank" rel="noopener noreferrer">Ouvrir la vidéo</a>
+      <a href={safeHttpUrl(post.media_url)} target="_blank" rel="noopener noreferrer">Ouvrir la vidéo</a>
     </div>
   );
   return (

@@ -35,19 +35,34 @@ export function clearTokens(): void {
   window.localStorage.removeItem(REFRESH_KEY);
 }
 
-async function refreshAccessToken(): Promise<string | null> {
+// Fired on window when the refresh token is rejected and the tokens have been
+// cleared. AppFrame listens for it and sends the user back to /login.
+export const SESSION_EXPIRED_EVENT = "hub:session-expired";
+
+function expireSession(): void {
+  clearTokens();
+  if (isBrowser()) window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+}
+
+async function performRefresh(): Promise<string | null> {
   const refresh = getRefreshToken();
   if (!API_BASE_URL || !refresh) return null;
 
-  const response = await fetch(`${API_BASE_URL}/api/token/refresh/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh }),
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/token/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh }),
+      cache: "no-store",
+    });
+  } catch {
+    // Network failure: keep the tokens, the next request can retry.
+    return null;
+  }
 
   if (!response.ok) {
-    clearTokens();
+    expireSession();
     return null;
   }
 
@@ -55,6 +70,20 @@ async function refreshAccessToken(): Promise<string | null> {
   const nextRefresh = data.refresh ?? refresh;
   setTokens(data.access, nextRefresh);
   return data.access;
+}
+
+// Single-flight: parallel 401s (HubProvider fires 4 requests at once) share one
+// refresh call. With refresh-token rotation, a second concurrent refresh would
+// present an already-blacklisted token and log the user out.
+let refreshInFlight: Promise<string | null> | null = null;
+
+function refreshAccessToken(): Promise<string | null> {
+  if (!refreshInFlight) {
+    refreshInFlight = performRefresh().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
 }
 
 export async function login(username: string, password: string): Promise<void> {
@@ -147,8 +176,15 @@ async function request<T>(
   });
 
   if (response.status === 401 && !retried) {
-    const next = await refreshAccessToken();
-    if (next) return request<T>(path, init, true);
+    // Another request may already have refreshed while this one was in flight.
+    const current = getAccessToken();
+    if (current && current !== token) return request<T>(path, init, true);
+    if (!getRefreshToken()) {
+      if (token) expireSession();
+    } else {
+      const next = await refreshAccessToken();
+      if (next) return request<T>(path, init, true);
+    }
   }
 
   if (!response.ok) {

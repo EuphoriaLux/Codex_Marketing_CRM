@@ -18,7 +18,6 @@ import {
   WhatsAppInboundMessage,
 } from "@/lib/types";
 
-const DEFAULT_RECIPIENT = "+352691930706";
 const E164 = /^\+\d{8,15}$/;
 const TERMINAL: WhatsAppMessageStatus[] = ["delivered", "read", "failed"];
 const POLL_INTERVAL_MS = 3_000;
@@ -75,7 +74,7 @@ export default function WhatsAppPage() {
   const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
   const [templatesError, setTemplatesError] = useState<string | null>(null);
   const [selectedTemplateName, setSelectedTemplateName] = useState("");
-  const [recipient, setRecipient] = useState(DEFAULT_RECIPIENT);
+  const [recipient, setRecipient] = useState("");
   const [params, setParams] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -99,11 +98,9 @@ export default function WhatsAppPage() {
     listWhatsAppTemplates()
       .then((res) => {
         if (cancelled) return;
+        // No preselected template or recipient: sending is a real Meta message
+        // from production, so the staff member picks both explicitly.
         setTemplates(res.items);
-        const firstApproved = res.items.find((t) => t.status === "APPROVED");
-        const fallback = res.items[0];
-        const initial = firstApproved ?? fallback;
-        if (initial) setSelectedTemplateName(initial.name);
       })
       .catch(() => {
         if (!cancelled) setTemplatesError("Unable to load templates.");
@@ -205,7 +202,7 @@ export default function WhatsAppPage() {
       return;
     }
     if (!E164.test(recipient)) {
-      setSendError("Recipient must be E.164 (e.g. +352691930706).");
+      setSendError("Recipient must be E.164 (e.g. +3526XXXXXXXX).");
       return;
     }
 
@@ -363,9 +360,9 @@ export default function WhatsAppPage() {
                   onChange={(e) => setSelectedTemplateName(e.target.value)}
                   disabled={templates.length === 0}
                 >
-                  {templates.length === 0 ? (
-                    <option value="">Loading…</option>
-                  ) : null}
+                  <option value="">
+                    {templates.length === 0 ? "Loading…" : "— Choose a template —"}
+                  </option>
                   {templates.map((t) => (
                     <option key={`${t.name}:${t.language}`} value={t.name}>
                       {t.name} ({t.language}) — {t.status}
@@ -381,7 +378,7 @@ export default function WhatsAppPage() {
                 type="text"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                placeholder="+352691930706"
+                placeholder="+3526XXXXXXXX"
               />
             </label>
 

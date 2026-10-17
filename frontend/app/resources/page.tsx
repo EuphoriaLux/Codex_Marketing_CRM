@@ -6,7 +6,7 @@ import { StatusBanner } from "@/components/status-banner";
 import { useHubData } from "@/lib/hub-provider";
 
 export default function ResourcesPage() {
-  const { resources } = useHubData();
+  const { resources, loading } = useHubData();
 
   return (
     <main className="page">
@@ -17,6 +17,12 @@ export default function ResourcesPage() {
         description="A dedicated customer hub should not make people hunt through emails for every document."
       />
 
+      {!loading && resources.length === 0 ? (
+        <Panel title="No resources yet" description="Shared documents will appear here once they are published from the backend.">
+          {null}
+        </Panel>
+      ) : null}
+
       <div className="resource-grid">
         {resources.map((resource) => (
           <Panel key={resource.id} title={resource.title} description={resource.summary}>
@@ -24,9 +30,6 @@ export default function ResourcesPage() {
               <span className="resource-type">{resource.type}</span>
               <span>{resource.updatedAt}</span>
             </div>
-            <button type="button" className="button secondary">
-              Open resource
-            </button>
           </Panel>
         ))}
       </div>

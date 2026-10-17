@@ -9,6 +9,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { getAccessToken } from "@/lib/api/client";
 import { fetchHubData } from "@/lib/api/hub";
 import {
   CustomerSnapshot,
@@ -97,8 +98,10 @@ export function HubProvider({ children }: { children: ReactNode }) {
         }
       });
     } catch {
+      // A failing endpoint is not a logged-out user: keep `authenticated` tied
+      // to the token so the banner shows the error, not "Sign in".
       setError("Unable to load hub data.");
-      setAuthenticated(false);
+      setAuthenticated(Boolean(getAccessToken()));
     } finally {
       setLoading(false);
     }

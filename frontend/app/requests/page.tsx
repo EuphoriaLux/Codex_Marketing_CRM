@@ -7,7 +7,7 @@ import { StatusBanner } from "@/components/status-banner";
 import { useHubData } from "@/lib/hub-provider";
 
 export default function RequestsPage() {
-  const { requests } = useHubData();
+  const { requests, loading } = useHubData();
   const [draftSaved, setDraftSaved] = useState(false);
 
   function handleDraftSave(event: FormEvent<HTMLFormElement>) {
@@ -76,6 +76,13 @@ export default function RequestsPage() {
                 </tr>
               </thead>
               <tbody>
+                {!loading && requests.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ color: "var(--muted)", textAlign: "center" }}>
+                      No requests yet.
+                    </td>
+                  </tr>
+                ) : null}
                 {requests.map((request) => (
                   <tr key={request.id}>
                     <td>{request.subject}</td>

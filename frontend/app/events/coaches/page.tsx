@@ -21,7 +21,7 @@ import {
   buildDemoEvent,
   useLocalAvailabilities,
 } from "@/lib/data/event-coach-storage";
-import { useHubData } from "@/lib/hub-provider";
+import { useHubData } from "@/lib/hub-provider";import { safeHttpUrl } from "@/lib/safe-url";
 import type {
   CoachAvailabilityStatus,
   EventCoachAvailability,
@@ -566,10 +566,10 @@ export default function EventCoachesPage() {
                     </div>
                   )}
 
-                  {event.eventUrl ? (
+                  {safeHttpUrl(event.eventUrl) ? (
                     <a
                       className="event-card-link"
-                      href={event.eventUrl}
+                      href={safeHttpUrl(event.eventUrl)}
                       target="_blank"
                       rel="noreferrer"
                     >

@@ -6,6 +6,7 @@ import { Panel } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
 import { StatusBanner } from "@/components/status-banner";
 import { SocialDeck } from "@/components/social-deck";
+import { safeHttpUrl } from "@/lib/safe-url";
 import { defaultReviewProfiles, eligibleProfile, formatPostingTime, luxembourgInput, luxembourgIso, reviewBlocker, reviewTime } from "@/lib/social-review";
 import {
   createEventFacebookDrafts,
@@ -463,7 +464,7 @@ export default function MarketingSocialPage() {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", alignItems: "start" }}>
                     <div>
-                      <a href={event.event_url} target="_blank" rel="noreferrer" style={{ color: "#f8fafc", fontWeight: 650 }}>
+                      <a href={safeHttpUrl(event.event_url)} target="_blank" rel="noreferrer" style={{ color: "#f8fafc", fontWeight: 650 }}>
                         {event.title}
                       </a>
                       <div style={{ color: "#94a3b8", fontSize: "0.82rem", marginTop: "0.35rem" }}>
@@ -878,9 +879,9 @@ export default function MarketingSocialPage() {
                           </div>
                         )}
 
-                        {post.source_metadata?.source_url && (
+                        {post.source_metadata && safeHttpUrl(post.source_metadata.source_url) && (
                           <p style={{ fontSize: "0.8rem", marginBottom: "0.5rem" }}>
-                            Source : <a href={post.source_metadata.source_url} target="_blank" rel="noopener noreferrer">{post.source_metadata.title || "Voir la source"}</a>
+                            Source : <a href={safeHttpUrl(post.source_metadata.source_url)} target="_blank" rel="noopener noreferrer">{post.source_metadata.title || "Voir la source"}</a>
                             {post.source_metadata.checked_at && <> · Vérifiée le {new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Luxembourg", dateStyle: "short" }).format(new Date(post.source_metadata.checked_at))}</>}
                           </p>
                         )}
