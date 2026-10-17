@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository shape
 
-This repo is **frontend-only** despite appearances. The active workspace is `frontend/` (Next.js 15 / React 19 / TypeScript). The top-level `config/`, `hub/`, `templates/`, `static/` directories are leftover Django scaffolding and contain nothing but `__pycache__` — do not add code there or assume a backend lives in this repo. The Django backend referenced by the frontend is a separate service (Crush.lu).
+This repo is **frontend-only** despite appearances. The active workspace is `frontend/` (Next.js 15 / React 19 / TypeScript). No backend lives in this repo — do not add Django code here (old untracked `config/`, `hub/`, `templates/`, `static/` folders in some checkouts are `__pycache__` leftovers). The Django backend referenced by the frontend is a separate service (Crush.lu).
 
 All commands below run from `frontend/`.
 
@@ -14,13 +14,13 @@ All commands below run from `frontend/`.
 cd frontend
 npm install
 npm run dev      # local dev server (Next.js)
-npm run build    # static export → frontend/out (deploy artifact)
+npm run build    # lint, then static export → frontend/out (deploy artifact)
 npm run lint     # eslint via next lint
 ```
 
-There is no test runner configured — `npm test` does not exist.
+There is no `npm test`. The only tests are `npm run test:social` (`node --test` on `lib/social-review.test.ts`).
 
-`NEXT_PUBLIC_API_BASE_URL` must be set for any API call to work. Local dev defaults to `http://localhost:8000` when `NODE_ENV=development` (see `lib/api/client.ts`); copy `.env.local.example` to `.env.local` to override. CI sets it per environment in `.github/workflows/azure-static-web-apps-*.yml` (PRs → `https://test.crush.lu`, main → `https://crush.lu`).
+`NEXT_PUBLIC_API_BASE_URL` must be set for any API call to work. Local dev defaults to `http://localhost:8000` when `NODE_ENV=development` (see `lib/api/client.ts`); copy `.env.local.example` to `.env.local` to override. CI sets both `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_CRUSH_BASE_URL` (SSO initiation) to `https://crush.lu` in `.github/workflows/azure-static-web-apps-*.yml`. There is a single environment: **hub.crush.lu talks to production crush.lu**, so every write in the UI is a production write. To test against staging, run `npm run dev` with `NEXT_PUBLIC_API_BASE_URL=https://test.crush.lu` (needs staging CORS/SSO to allow `http://localhost:3000`).
 
 ## Architecture
 
@@ -52,7 +52,7 @@ Both flows in `lib/api/client.ts` end up storing a JWT pair (`hub_access_token`,
 The `request<T>()` wrapper attaches the bearer token, and on 401 it makes **one** refresh attempt against `/api/token/refresh/` before failing. If refresh fails it clears tokens — subsequent hub fetches will return `null` (unauthenticated) and the UI will show the "Sign in to load your portal data" banner instead of stale data.
 
 ### API host convention
-The backend is reached at a dedicated origin (e.g. `https://api.crush.lu`), and hub routes are exposed as `/hub/*` directly on that host — **not** under `/api/hub/*`. JWT routes (`/api/token/*`, `/api/auth/spa-callback/`) keep the `/api/` prefix because they're DRF-standard. Don't conflate the two when adding endpoints.
+The backend is reached at `https://crush.lu` (`api.crush.lu` has no DNS — see #33), and hub routes are exposed as `/hub/*` directly on that host — **not** under `/api/hub/*`. JWT routes (`/api/token/*`, `/api/auth/spa-callback/`) keep the `/api/` prefix because they're DRF-standard. Don't conflate the two when adding endpoints.
 
 ### Path alias
 `tsconfig.json` maps `@/*` to `frontend/*`. Always import as `@/lib/...`, `@/components/...`, never as relative `../../`.
@@ -60,4 +60,4 @@ The backend is reached at a dedicated origin (e.g. `https://api.crush.lu`), and 
 ## CI / deploy notes
 
 - `auto-merge-reapers013.yml` auto-approves and squash-merges PRs from user `REAPERS013`. The author check is intentionally at **step level**, not job level: `pull_request_target` fires on syncs of any open PR (including downstream forks tracking main), and a job-level filter would mark the workflow as failed (red X on main) instead of skipped. Don't move the guard.
-- Static Web Apps workflow runs on `push` to main and on PR open/sync/reopen/close. PR builds get preview environments automatically.
+- Static Web Apps workflow runs only on `push` to main (plus `workflow_dispatch`). There are **no PR preview environments** — fork PRs can't read the deploy secret — so merging to main is the first live run. Roll back with a revert commit on main.
