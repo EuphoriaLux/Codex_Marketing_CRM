@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { PublicFrame } from "@/components/public-frame";
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
-import { getAccessToken } from "@/lib/api/client";
+import { SESSION_EXPIRED_EVENT, getAccessToken } from "@/lib/api/client";
 import { HubProvider } from "@/lib/hub-provider";
 
 // Routes rendered with the marketing/public chrome (no sidebar, no auth required).
@@ -67,15 +67,28 @@ export function AppFrame({ children }: { children: ReactNode }) {
   const fullScreen = isFullScreen(pathname);
   const authOpen = isAuthOpen(pathname);
   const [mounted, setMounted] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // A rejected refresh token clears the tokens mid-page; without this the
+  // user stays on a page full of API errors until they navigate.
+  useEffect(() => {
+    const onExpired = () => setSessionExpired(true);
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+  }, []);
+
+  useEffect(() => {
+    setSessionExpired(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (!mounted || publicFrame || fullScreen || authOpen) return;
     if (!getAccessToken()) router.replace("/login");
-  }, [mounted, publicFrame, fullScreen, authOpen, pathname, router]);
+  }, [mounted, publicFrame, fullScreen, authOpen, pathname, router, sessionExpired]);
 
   const dark = shouldUseDarkShell(pathname);
 

@@ -268,6 +268,13 @@ export default function AccountingPage() {
     };
   }, []);
 
+  // Sidebar deep link (/accounting#payroll): the target panel only has content
+  // once the data is loaded, so scroll after loading instead of on navigation.
+  useEffect(() => {
+    if (loading || !window.location.hash) return;
+    document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ behavior: "smooth" });
+  }, [loading]);
+
   const locationName = (id?: string) =>
     locations.find((l) => l.id === id)?.name ?? "—";
 
@@ -871,7 +878,7 @@ export default function AccountingPage() {
       </Panel>
 
       {/* FRAIS DES EMPLOYÉS */}
-      <Panel title="">
+      <Panel id="payroll" title="">
         <div className="accounting-panel-head">
           <div>
             <h2 style={{ margin: 0 }}>

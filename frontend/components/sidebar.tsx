@@ -46,7 +46,7 @@ const navSections: NavSection[] = [
     title: "FinOps & Comptabilité",
     items: [
       { href: "/accounting", label: "Comptabilité Générale", icon: "💰" },
-      { href: "/accounting?tab=payroll", label: "Salaires & Dépenses", icon: "💼" },
+      { href: "/accounting#payroll", label: "Salaires & Dépenses", icon: "💼" },
     ],
   },
   {
@@ -77,11 +77,9 @@ export function Sidebar() {
             <div key={section.title} className="nav-section-group">
               <div className="nav-section">{section.title}</div>
               {section.items.map((item) => {
-                const active =
-                  pathname === item.href ||
-                  (item.href.includes("?")
-                    ? pathname === item.href.split("?")[0]
-                    : false);
+                // Anchor links (#payroll) point inside another entry's page and
+                // never take the highlight from it.
+                const active = !item.href.includes("#") && pathname === item.href;
                 return (
                   <Link
                     key={item.href}
