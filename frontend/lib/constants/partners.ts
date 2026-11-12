@@ -1,4 +1,21 @@
-import { OfferEventType, OnboardingStepKey, PartnershipStage } from "@/lib/types";
+import {
+  CrushEventType,
+  OfferEventType,
+  OnboardingStepKey,
+  PartnershipStage,
+} from "@/lib/types";
+
+export const LOCATION_COMPATIBLE_EVENT_TYPES: {
+  value: CrushEventType;
+  label: string;
+  icon: string;
+}[] = [
+  { value: "Speed dating", label: "Speed dating", icon: "🍷" },
+  { value: "Quiz night", label: "Quiz night", icon: "❓" },
+  { value: "Wine tasting", label: "Wine tasting", icon: "🍇" },
+  { value: "Cooking workshop", label: "Cooking workshop", icon: "👨‍🍳" },
+  { value: "Outdoor activity", label: "Outdoor activity", icon: "🌿" },
+];
 
 export const LUXEMBOURG_CANTONS = [
   "Capellen",

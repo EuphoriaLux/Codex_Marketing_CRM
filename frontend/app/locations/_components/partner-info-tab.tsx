@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { updateLocation } from "@/lib/api/locations";
 import {
-  EVENT_TYPE_OPTIONS,
+  LOCATION_COMPATIBLE_EVENT_TYPES,
   LUXEMBOURG_CANTONS,
   STAGE_OPTIONS,
 } from "@/lib/constants/partners";
@@ -523,7 +523,7 @@ export function PartnerInfoTab({ partner, onPartnerUpdated }: Props) {
           <label className="form-label">
             <span>Types d'événements adaptés</span>
             <div className="checkbox-grid" style={{ marginTop: "0.4rem" }}>
-              {EVENT_TYPE_OPTIONS.map((opt) => (
+              {LOCATION_COMPATIBLE_EVENT_TYPES.map((opt) => (
                 <label key={opt.value} className="checkbox-label">
                   <input
                     type="checkbox"

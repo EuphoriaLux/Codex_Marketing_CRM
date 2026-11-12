@@ -128,6 +128,12 @@ export type LocationItem = {
   partnershipStage: PartnershipStage;
   primaryContact: LocationContact;
   accountManager: string;
+  claimedById?: string | null;
+  claimedByName?: string;
+  claimedByEmail?: string;
+  claimedAt?: string | null;
+  claimedByMe?: boolean;
+  externalSource?: string;
   commercialTerms?: string;
   partnerSince?: string;
 
