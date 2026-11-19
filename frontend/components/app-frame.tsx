@@ -16,7 +16,7 @@ const PUBLIC_FRAME_ROUTES = ["/partnership"];
 const FULL_SCREEN_ROUTES = new Set<string>([]);
 
 // Routes that render in the standard Shell but don't require a logged-in user.
-const AUTH_OPEN_ROUTES = new Set(["/login", "/auth/callback", "/legacy"]);
+const AUTH_OPEN_ROUTES = new Set(["/login", "/auth/callback"]);
 
 function isPublicFrameRoute(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -38,7 +38,7 @@ function isAuthOpen(pathname: string | null): boolean {
 }
 
 // Routes that keep the original light shell (everything else gets the dark theme).
-const LIGHT_SHELL_ROUTES = new Set(["/legacy", "/login"]);
+const LIGHT_SHELL_ROUTES = new Set(["/login"]);
 
 function shouldUseDarkShell(pathname: string | null): boolean {
   if (!pathname) return true;

@@ -29,7 +29,7 @@ test("DST missing or ambiguous local times require explicit correction", () => {
 test("video approvals require supported, resolved channels", () => {
   const video = {...post, media_type:"video", media_urls:[], media_url:"https://cdn.crush.lu/clip.mp4"} as SocialPost;
   assert.equal(reviewBlocker(video, profiles), null);
-  assert.match(reviewBlocker({...video, platforms:["linkedin"]}, [{id:"li",service:"linkedin",formatted_username:"Crush"}])!, /Instagram et Facebook/);
+  assert.match(reviewBlocker({...video, platforms:["linkedin"]}, [{id:"li",service:"linkedin",service_username:"crush",formatted_username:"Crush"}])!, /Instagram et Facebook/);
 });
 
 test("empty saved account list defaults to one connected account per platform", () => {

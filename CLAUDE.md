@@ -27,14 +27,12 @@ There is no `npm test`. The only tests are `npm run test:social` (`node --test` 
 ### Static export, not SSR
 `next.config.ts` sets `output: "export"` and `trailingSlash: true`. The build emits a fully static site to `frontend/out/` which Azure Static Web Apps serves. **Do not introduce server actions, route handlers, dynamic server-rendered pages, or anything else incompatible with `next export`** — it will break the deploy. Anything dynamic (search params, auth state) must be client-side, and `useSearchParams()` must be wrapped in `<Suspense>` (see `app/auth/callback/page.tsx`).
 
-### Data flow: HubProvider, no mock fallback
-`app/layout.tsx` mounts `AppFrame`, which wraps every page in `HubProvider` (`lib/hub-provider.tsx`). The provider calls `fetchHubData()` (`lib/api/hub.ts`), which:
+### Data flow: HubProvider holds the session, pages fetch their own data
+`app/layout.tsx` mounts `AppFrame`, which wraps every page in `HubProvider` (`lib/hub-provider.tsx`). The provider only holds the session: `fetchHubData()` (`lib/api/hub.ts`) returns `null` without an access token (`authenticated: false`), otherwise it loads `/hub/me` into `customer`. On failure it sets `error`; **there is no mock fallback**. `/settings` saves the profile with `PATCH /hub/me` and pushes the result back through `setCustomer`.
 
-1. If no access token in localStorage → returns `null`. Provider keeps empty state and exposes `authenticated: false`.
-2. Otherwise fetches `/hub/me`, `/hub/requests`, `/hub/resources`, `/hub/timeline` in parallel.
-3. On any API failure → the error propagates; provider sets `error` and stays empty. **There is no mock fallback.** Pages render their empty states honestly.
+Every domain page (events, partners, finance, social, WhatsApp, …) fetches its own data client-side. The dashboard's "Aujourd'hui" cockpit (`components/today-cockpit.tsx`) combines `/hub/events`, `/hub/events/availabilities`, `/hub/whatsapp/inbox?unread=1`, `/hub/social/posts?status=…` and `/hub/events/cancelled`, each settled on its own so one failing source only blanks its tile.
 
-Pages consume this via `useHubData()`. Metrics shown on the dashboard are **derived client-side** in `deriveMetrics()` from the loaded requests/resources — they are not a separate endpoint.
+Navigation lives in `lib/constants/navigation.ts`: the sidebar renders it and the Ctrl+K quick search (`components/quick-search.tsx`) searches it. Add new pages there. Removed legacy routes (`/requests`, `/resources`, `/legacy`, `/social`, `/publications`) are 301-redirected in `public/staticwebapp.config.json`.
 
 ### Live domain endpoints: Partners & Accounting
 Domain entities for Partners (`/locations` and `/locations/detail?id=`) and Accounting (`/accounting`) are **live against the Django API**, not mocks:
