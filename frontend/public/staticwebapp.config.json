@@ -6,17 +6,7 @@
       "statusCode": 301
     },
     {
-      "route": "/requests/",
-      "redirect": "/dashboard/",
-      "statusCode": 301
-    },
-    {
       "route": "/resources",
-      "redirect": "/dashboard/",
-      "statusCode": 301
-    },
-    {
-      "route": "/resources/",
       "redirect": "/dashboard/",
       "statusCode": 301
     },
@@ -26,27 +16,12 @@
       "statusCode": 301
     },
     {
-      "route": "/legacy/",
-      "redirect": "/dashboard/",
-      "statusCode": 301
-    },
-    {
       "route": "/social",
       "redirect": "/marketing/social/",
       "statusCode": 301
     },
     {
-      "route": "/social/",
-      "redirect": "/marketing/social/",
-      "statusCode": 301
-    },
-    {
       "route": "/publications",
-      "redirect": "/marketing/publications/",
-      "statusCode": 301
-    },
-    {
-      "route": "/publications/",
       "redirect": "/marketing/publications/",
       "statusCode": 301
     }
