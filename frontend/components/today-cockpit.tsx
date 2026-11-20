@@ -97,6 +97,13 @@ function staffEvents(
     });
 }
 
+// The backend sends one fixed minimum per event (not a target), so a well
+// staffed evening reads "8 coachs", not "8/2".
+function coachCoverage(assigned: number, minimum: number): string {
+  const label = `${assigned} coach${assigned > 1 ? "s" : ""}`;
+  return assigned >= minimum ? label : `${label} · min. ${minimum}`;
+}
+
 function Tile({
   href,
   label,
@@ -261,7 +268,7 @@ export function TodayCockpit() {
                   </div>
                   <div className="cockpit-event-staff">
                     <span className={`pill ${missing > 0 ? "overdue" : "paid"}`}>
-                      {event.assigned}/{event.coachesNeeded} coachs
+                      {coachCoverage(event.assigned, event.coachesNeeded)}
                     </span>
                     {missing > 0 ? (
                       <small>
