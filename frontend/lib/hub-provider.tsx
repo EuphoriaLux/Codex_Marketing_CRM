@@ -11,36 +11,15 @@ import {
 } from "react";
 import { getAccessToken } from "@/lib/api/client";
 import { fetchHubData } from "@/lib/api/hub";
-import {
-  CustomerSnapshot,
-  EventProfitability,
-  LocationItem,
-  Metric,
-  PaymentInItem,
-  PaymentOutItem,
-  PayrollItem,
-  RefundItem,
-  RequestItem,
-  ResourceItem,
-  TimelineEvent,
-} from "@/lib/types";
+import { CustomerSnapshot } from "@/lib/types";
 
 type HubState = {
   customer: CustomerSnapshot;
-  requests: RequestItem[];
-  resources: ResourceItem[];
-  timeline: TimelineEvent[];
-  locations: LocationItem[];
-  paymentsIn: PaymentInItem[];
-  paymentsOut: PaymentOutItem[];
-  payroll: PayrollItem[];
-  refunds: RefundItem[];
-  eventProfitability: EventProfitability[];
-  metrics: Metric[];
   authenticated: boolean;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  setCustomer: (customer: CustomerSnapshot) => void;
 };
 
 const emptyCustomer: CustomerSnapshot = {
@@ -52,26 +31,8 @@ const emptyCustomer: CustomerSnapshot = {
 
 const HubContext = createContext<HubState | null>(null);
 
-function deriveMetrics(requests: RequestItem[], resources: ResourceItem[]): Metric[] {
-  const activeRequests = requests.filter((item) => item.status !== "Closed").length;
-  const waitingRequests = requests.filter(
-    (item) => item.status === "Waiting for Client",
-  ).length;
-  const highPriority = requests.filter((item) => item.priority === "High").length;
-
-  return [
-    { label: "Active requests", value: String(activeRequests).padStart(2, "0") },
-    { label: "Shared resources", value: String(resources.length).padStart(2, "0") },
-    { label: "Waiting on client", value: String(waitingRequests).padStart(2, "0") },
-    { label: "High priority", value: String(highPriority).padStart(2, "0") },
-  ];
-}
-
 export function HubProvider({ children }: { children: ReactNode }) {
   const [customer, setCustomer] = useState<CustomerSnapshot>(emptyCustomer);
-  const [requests, setRequests] = useState<RequestItem[]>([]);
-  const [resources, setResources] = useState<ResourceItem[]>([]);
-  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,22 +46,16 @@ export function HubProvider({ children }: { children: ReactNode }) {
       startTransition(() => {
         if (data) {
           setCustomer(data.customer);
-          setRequests(data.requests);
-          setResources(data.resources);
-          setTimeline(data.timeline);
           setAuthenticated(true);
         } else {
           setCustomer(emptyCustomer);
-          setRequests([]);
-          setResources([]);
-          setTimeline([]);
           setAuthenticated(false);
         }
       });
     } catch {
       // A failing endpoint is not a logged-out user: keep `authenticated` tied
       // to the token so the banner shows the error, not "Sign in".
-      setError("Unable to load hub data.");
+      setError("Impossible de charger votre session depuis Crush.lu.");
       setAuthenticated(Boolean(getAccessToken()));
     } finally {
       setLoading(false);
@@ -115,20 +70,11 @@ export function HubProvider({ children }: { children: ReactNode }) {
     <HubContext.Provider
       value={{
         customer,
-        requests,
-        resources,
-        timeline,
-        locations: [],
-        paymentsIn: [],
-        paymentsOut: [],
-        payroll: [],
-        refunds: [],
-        eventProfitability: [],
-        metrics: deriveMetrics(requests, resources),
         authenticated,
         loading,
         error,
         refresh: loadData,
+        setCustomer,
       }}
     >
       {children}

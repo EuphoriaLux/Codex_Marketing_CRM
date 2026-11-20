@@ -21,7 +21,7 @@ export function DevlogPanel() {
 
   return (
     <Panel
-      title="Latest updates"
+      title="Dernières mises à jour"
       description="Changements du site, nouvelles fonctionnalités et retours de réunion."
     >
       {sorted.length === 0 ? (
