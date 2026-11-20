@@ -486,7 +486,8 @@ export default function EventCoachesPage() {
                   </div>
                   <div className="staffing-legend">
                     <strong>
-                      Coachs confirmés : {assigned.length}/{needed}
+                      Coachs confirmés : {assigned.length}
+                      {assigned.length < needed ? ` (min. ${needed})` : ""}
                     </strong>
                     <span>
                       {waiting.length} en attente de validation
@@ -595,7 +596,9 @@ export default function EventCoachesPage() {
                 title={`${event.title}${event.isDemo ? " · Démo" : ""}`}
                 description={`${formatDate(event.dateTime)} · ${
                   event.location || "Lieu à confirmer"
-                } · ${assigned.length}/${needed} coach(s) confirmé(s)`}
+                } · ${assigned.length} coach(s) confirmé(s)${
+                  assigned.length < needed ? ` (min. ${needed})` : ""
+                }`}
               >
                 {list.length === 0 ? (
                   <div style={{ padding: "1.2rem", textAlign: "center", color: "var(--muted)" }}>
@@ -650,12 +653,7 @@ export default function EventCoachesPage() {
                                   <button
                                     type="button"
                                     className="button"
-                                    disabled={busy || assigned.length >= needed}
-                                    title={
-                                      assigned.length >= needed
-                                        ? "Tous les postes sont déjà pourvus"
-                                        : undefined
-                                    }
+                                    disabled={busy}
                                     onClick={() =>
                                       void handleStatus(event, item, "assigned")
                                     }
