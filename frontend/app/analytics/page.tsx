@@ -172,6 +172,8 @@ export default function AnalyticsPage() {
     void load();
   }, [load]);
 
+  const searchQueries = data?.search.queries ?? [];
+
   const activationMaximum = useMemo(() => {
     if (!data) return 1;
     return Math.max(
@@ -294,6 +296,29 @@ export default function AnalyticsPage() {
                 </table>
               </div>
             ) : <div className="analytics-empty">Aucune page d’entrée disponible pour cette période.</div>}
+          </Panel>
+
+          <Panel title="Recherches Google" description="Requêtes tapées dans Google qui ont affiché crush.lu (Search Console, agrégé). Les positions 5 à 20 sont les plus faciles à faire monter en première page.">
+            {searchQueries.length ? (
+              <div className="table-wrap">
+                <table className="table analytics-table">
+                  <thead>
+                    <tr><th>Recherche</th><th>Impressions</th><th>Clics</th><th>CTR</th><th>Position</th></tr>
+                  </thead>
+                  <tbody>
+                    {searchQueries.slice(0, 25).map((row) => (
+                      <tr key={row.query}>
+                        <td>{row.query}</td>
+                        <td>{integerFormatter.format(row.impressions)}</td>
+                        <td>{integerFormatter.format(row.clicks)}</td>
+                        <td>{formatPercent(row.ctr)}</td>
+                        <td>{decimalFormatter.format(row.position)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : <div className="analytics-empty">Aucune recherche disponible pour cette période.</div>}
           </Panel>
 
           <div className="analytics-two-up">
