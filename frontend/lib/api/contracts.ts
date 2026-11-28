@@ -178,6 +178,14 @@ export type AnalyticsOverviewResponse = {
       users: number | null;
       engagementRate: number | null;
     }>;
+    /** Top Google search queries (Search Console). Absent on older backends. */
+    queries?: Array<{
+      query: string;
+      clicks: number;
+      impressions: number;
+      ctr: number;
+      position: number;
+    }>;
   };
   audience: {
     summary: {
